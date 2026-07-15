@@ -248,7 +248,7 @@
         <span class="spinner"></span>
         <span id="runBtnLabel">Run agent job</span>
       </button>
-      <span class="hint" id="hint">POST /run-job → localhost:3001</span>
+      <span class="hint" id="hint"></span>
     </div>
   </div>
 
@@ -412,7 +412,7 @@ async function runJob(){
   btn.disabled = true;
   btn.classList.add('loading');
   label.textContent = 'Running…';
-  hint.textContent = 'contacting backend…';
+  hint.textContent = '';
   clearLog();
   setStatus('running', 'running');
 
@@ -476,7 +476,7 @@ async function runJob(){
     btn.disabled = false;
     btn.classList.remove('loading');
     label.textContent = 'Run agent job';
-    hint.textContent = 'POST /run-job → localhost:3001';
+    hint.textContent = '';
   }
 }
 </script>
