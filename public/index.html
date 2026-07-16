@@ -84,6 +84,12 @@
   @keyframes spin{to{transform:rotate(360deg);}}
 
   .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+  .how-it-works{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+  .how-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .how-num{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:10px;}
+  .how-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--text);margin-bottom:6px;}
+  .how-desc{font-family:'Inter',sans-serif;font-size:12.5px;color:var(--muted);line-height:1.4;}
+  @media (max-width:760px){.how-it-works{grid-template-columns:1fr;}}
   .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
   .stat-card .label{font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
   .stat-card .value{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;}
@@ -146,6 +152,13 @@
     <h1>Two agents. One <span>ledger</span>.<br/>Settlement without a human in the loop.</h1>
     <p class="sub">A client agent escrows a fee. A worker agent classifies the task, executes it, and gets paid — or refunded — the instant the result is verified on Arc.</p>
   </header>
+
+  <div class="how-it-works">
+    <div class="how-card"><div class="how-num">1</div><div class="how-title">Submit</div><div class="how-desc">Client agent posts any task — no type specified upfront.</div></div>
+    <div class="how-card"><div class="how-num">2</div><div class="how-title">Classify & Price</div><div class="how-desc">Worker detects the task type and sets a dynamic fee based on length.</div></div>
+    <div class="how-card"><div class="how-num">3</div><div class="how-title">Escrow & Execute</div><div class="how-desc">Fee is held in trust while the worker completes the task with an LLM.</div></div>
+    <div class="how-card"><div class="how-num">4</div><div class="how-title">Verify & Settle</div><div class="how-desc">Result is checked against a rule — funds release or refund instantly.</div></div>
+  </div>
 
   <div class="stats-row">
     <div class="stat-card">

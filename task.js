@@ -28,8 +28,8 @@ async function doSummarize(inputText) {
     model: 'gpt-4o-mini',
     temperature: 0,
     messages: [
-      { role: 'system', content: 'Summarize in English, in one short sentence, using significantly fewer words than the original. Never translate.' },
-      { role: 'user', content: `Summarize this text in English, in one short sentence:\n\n${inputText}` },
+      { role: 'system', content: 'Summarize in the SAME language as the input, in one short sentence, using significantly fewer words than the original.' },
+      { role: 'user', content: `Summarize this text, in one short sentence:\n\n${inputText}` },
     ],
   });
   const summary = response.choices[0].message.content.trim();
@@ -52,31 +52,38 @@ async function doSentiment(inputText) {
   return { accepted, result, taskType: 'sentiment' };
 }
 
-// Phrases that indicate the model could NOT actually answer the question
-const NON_ANSWER_PATTERNS = [
-  /i don'?t have (real-time|specific|access to)/i,
-  /i cannot provide/i,
-  /i do not have/i,
-  /i'?m unable to/i,
-  /no (real-time )?information/i,
-  /check (official|a reliable)/i,
-  /please check/i,
-  /as of my last (update|training)/i,
-  /i don'?t know/i,
-];
+// AI-based check: is this a genuine answer, or a refusal/non-answer, in ANY language?
+async function isGenuineAnswer(question, answer) {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    temperature: 0,
+    messages: [
+      {
+        role: 'system',
+        content: 'You judge whether an AI answer genuinely answers the question, in any language. Respond with only YES or NO. Respond NO if the answer is a refusal, an apology, a statement of not knowing, or a redirection to check elsewhere instead of answering. Respond YES only if it gives real, specific information that answers the question.',
+      },
+      {
+        role: 'user',
+        content: `Question: ${question}\n\nAnswer: ${answer}\n\nDoes the answer genuinely answer the question? Respond YES or NO only.`,
+      },
+    ],
+  });
+  const verdict = response.choices[0].message.content.trim().toUpperCase();
+  return verdict.startsWith('YES');
+}
 
 async function doQA(inputText) {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     temperature: 0,
     messages: [
-      { role: 'system', content: 'Answer the question directly and concisely, in one or two sentences. If you genuinely cannot answer, say so clearly and briefly.' },
+      { role: 'system', content: 'Answer the question directly and concisely, in the SAME language as the question, in one or two sentences. If you genuinely cannot answer, say so clearly and briefly.' },
       { role: 'user', content: inputText },
     ],
   });
   const result = response.choices[0].message.content.trim();
-  const isNonAnswer = NON_ANSWER_PATTERNS.some(p => p.test(result));
-  const accepted = result.length > 0 && result.length < 500 && !isNonAnswer;
+  const genuine = await isGenuineAnswer(inputText, result);
+  const accepted = result.length > 0 && result.length < 500 && genuine;
   return { accepted, result, taskType: 'qa' };
 }
 
