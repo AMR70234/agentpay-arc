@@ -2,14 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const client = require('./circleClient');
-const { executeTask } = require('./task');
+const { runEscrowJob } = require('./escrowJob');
+const { getStats } = require('./reputation');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
-
-const USDC_TOKEN_ID = 'ef87c8c3-85de-598a-af50-c5135eecfa74';
 
 app.post('/run-job', async (req, res) => {
   const { taskInput, amount } = req.body;
@@ -20,33 +19,16 @@ app.post('/run-job', async (req, res) => {
 
   try {
     console.log('🚀 Job started...');
-    const taskResult = await executeTask(taskInput);
+    const result = await runEscrowJob(taskInput, amount);
 
-    if (taskResult.accepted) {
-      console.log('✅ Task accepted, transferring payment...');
-
-      const transferResponse = await client.createTransaction({
-        walletId: process.env.WALLET_ID,
-        tokenId: USDC_TOKEN_ID,
-        destinationAddress: process.env.WORKER_WALLET_ADDRESS,
-        amount: [amount ? String(amount) : '1'],
-        fee: {
-          type: 'level',
-          config: { feeLevel: 'MEDIUM' },
-        },
-      });
-
-      return res.json({
-        accepted: true,
-        summary: taskResult.result,
-        transaction: transferResponse.data,
-      });
-    } else {
-      return res.json({
-        accepted: false,
-        summary: taskResult.result,
-      });
-    }
+    return res.json({
+      accepted: result.accepted,
+      summary: result.summary,
+      taskType: result.taskType,
+      amount: result.amount,
+      transaction: result.finalTx,
+      stats: result.stats,
+    });
   } catch (error) {
     console.error('❌ Error in /run-job:', error.message);
     return res.status(500).json({ error: error.message });
@@ -55,8 +37,9 @@ app.post('/run-job', async (req, res) => {
 
 app.get('/balances', async (req, res) => {
   try {
-    const [clientBal, workerBal] = await Promise.all([
+    const [clientBal, escrowBal, workerBal] = await Promise.all([
       client.getWalletTokenBalance({ id: process.env.WALLET_ID }),
+      client.getWalletTokenBalance({ id: process.env.ESCROW_WALLET_ID }),
       client.getWalletTokenBalance({ id: process.env.WORKER_WALLET_ID }),
     ]);
 
@@ -67,12 +50,17 @@ app.get('/balances', async (req, res) => {
 
     res.json({
       client: getUsdc(clientBal),
+      escrow: getUsdc(escrowBal),
       worker: getUsdc(workerBal),
     });
   } catch (error) {
     console.error('❌ Error in /balances:', error.message);
     res.status(500).json({ error: error.message });
   }
+});
+
+app.get('/reputation', (req, res) => {
+  res.json(getStats());
 });
 
 const PORT = process.env.PORT || 3001;
