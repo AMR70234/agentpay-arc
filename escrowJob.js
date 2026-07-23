@@ -1,9 +1,25 @@
 require('dotenv').config();
-const client = require('./circleClient');
 const { executeTask } = require('./task');
 const { recordJob } = require('./reputation');
 
-const USDC_TOKEN_ID = 'ef87c8c3-85de-598a-af50-c5135eecfa74';
+// Circle App Kit — official Circle SDK for Send/Bridge/Swap/Unified Balance,
+// used here (via the Circle Wallets adapter) to move USDC between our
+// developer-controlled wallets, instead of a raw Circle API call.
+let appKitPromise = null;
+async function getAppKit() {
+  if (!appKitPromise) {
+    appKitPromise = (async () => {
+      const { createCircleWalletsAdapter } = await import('@circle-fin/adapter-circle-wallets');
+      const { AppKit } = await import('@circle-fin/app-kit');
+      const adapter = createCircleWalletsAdapter({
+        apiKey: process.env.CIRCLE_API_KEY,
+        entitySecret: process.env.CIRCLE_ENTITY_SECRET,
+      });
+      return { kit: new AppKit(), adapter };
+    })();
+  }
+  return appKitPromise;
+}
 
 function calculatePrice(inputText) {
   const wordCount = inputText.trim().split(/\s+/).length;
@@ -12,18 +28,15 @@ function calculatePrice(inputText) {
   return '2';
 }
 
-async function transferUSDC(fromWalletId, toAddress, amount) {
-  const response = await client.createTransaction({
-    walletId: fromWalletId,
-    tokenId: USDC_TOKEN_ID,
-    destinationAddress: toAddress,
-    amount: [String(amount)],
-    fee: {
-      type: 'level',
-      config: { feeLevel: 'MEDIUM' },
-    },
+async function transferUSDC(fromWalletAddress, toAddress, amount) {
+  const { kit, adapter } = await getAppKit();
+  const result = await kit.send({
+    from: { adapter, chain: 'Arc_Testnet', address: fromWalletAddress },
+    to: toAddress,
+    amount: String(amount),
+    token: 'USDC',
   });
-  return response.data;
+  return { id: result.txHash, state: result.state, explorerUrl: result.explorerUrl };
 }
 
 async function runEscrowJob(taskInput, amount) {
@@ -32,7 +45,7 @@ async function runEscrowJob(taskInput, amount) {
 
   log.push(`💰 Escrowing ${amount} USDC from client...`);
   const escrowTx = await transferUSDC(
-    process.env.WALLET_ID,
+    process.env.WALLET_ADDRESS,
     process.env.ESCROW_WALLET_ADDRESS,
     amount
   );
@@ -46,7 +59,7 @@ async function runEscrowJob(taskInput, amount) {
   if (taskResult.accepted) {
     log.push(`✅ Task accepted — releasing funds to worker...`);
     finalTx = await transferUSDC(
-      process.env.ESCROW_WALLET_ID,
+      process.env.ESCROW_WALLET_ADDRESS,
       process.env.WORKER_WALLET_ADDRESS,
       amount
     );
@@ -54,7 +67,7 @@ async function runEscrowJob(taskInput, amount) {
   } else {
     log.push(`❌ Task rejected — refunding client...`);
     finalTx = await transferUSDC(
-      process.env.ESCROW_WALLET_ID,
+      process.env.ESCROW_WALLET_ADDRESS,
       process.env.WALLET_ADDRESS,
       amount
     );

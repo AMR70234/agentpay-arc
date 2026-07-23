@@ -20,6 +20,10 @@ Autonomous agents are increasingly able to act on behalf of users — managing r
 
 Every step is real: real wallets, a real LLM call, real escrow, and real on-chain USDC transfers — not a simulation.
 
+## Circle App Kit
+
+USDC transfers in the escrow flow (`escrowJob.js`) run through Circle's official **App Kit** (`@circle-fin/app-kit`), using the `@circle-fin/adapter-circle-wallets` adapter to connect directly to the project's existing Developer-Controlled Wallets — no separate wallet setup needed. This replaces a raw Circle API call with a single `kit.send()` call, using the same App Kit SDK mentioned as a core Arc product for this hackathon.
+
 ## Why Arc + USDC
 
 - **USDC as native gas** means the agents never need to hold or manage a separate volatile asset just to pay network fees.
@@ -83,7 +87,7 @@ Fees aren't fixed. The worker prices each job based on task length:
 
 | Layer | Technology |
 |---|---|
-| Wallets & settlement | Circle Developer-Controlled Wallets SDK |
+| Wallets & settlement | Circle App Kit (`@circle-fin/app-kit`) with the Circle Wallets adapter, on top of Developer-Controlled Wallets |
 | Blockchain | Arc Testnet |
 | Task execution | OpenAI (gpt-4o-mini) |
 | Backend | Node.js, Express |
