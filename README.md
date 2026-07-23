@@ -20,6 +20,13 @@ Autonomous agents are increasingly able to act on behalf of users — managing r
 
 Every step is real: real wallets, a real LLM call, real escrow, and real on-chain USDC transfers — not a simulation.
 
+## Recent hardening
+
+Two additions on top of the base flow, ported from lessons learned in a related security-focused fork of this project:
+
+- **Independent verification.** The worker executes tasks with `gpt-4o-mini`, but a *separate*, stronger model (`gpt-4o`) independently judges whether the result is genuine — rather than the same model grading its own work. It also rejects confident-sounding answers about time-sensitive facts (current officeholders, prices, rankings) unless they include an explicit "may be outdated" caveat.
+- **Dispute window.** Accepted jobs no longer release instantly. Funds sit in escrow for an 8-second window during which the client can dispute the result via `POST /dispute` and get refunded before the automatic release timer fires.
+
 ## Circle App Kit
 
 USDC transfers in the escrow flow (`escrowJob.js`) run through Circle's official **App Kit** (`@circle-fin/app-kit`), using the `@circle-fin/adapter-circle-wallets` adapter to connect directly to the project's existing Developer-Controlled Wallets — no separate wallet setup needed. This replaces a raw Circle API call with a single `kit.send()` call, using the same App Kit SDK mentioned as a core Arc product for this hackathon.
@@ -129,6 +136,7 @@ OPENAI_API_KEY=
 - Move escrow logic from an off-chain orchestration script into an actual on-chain smart contract, closer to the ERC-8183 job/escrow standard (post → escrow → deliver → evaluate → settle entirely on-chain).
 - Add on-chain agent identity (ERC-8004), so a worker agent's reputation is portable and verifiable across applications, not stored in a local file.
 - Support multiple worker agents competing for the same job, with the client agent choosing based on price and reputation.
+- Explore deeper integration with Agent Stack starter kits for wallet/payment orchestration.
 - Persist reputation data in a hosted store so it survives redeploys, instead of local JSON.
 
 ## Live demo
