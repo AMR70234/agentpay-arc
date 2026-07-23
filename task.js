@@ -53,14 +53,16 @@ async function doSentiment(inputText) {
 }
 
 // AI-based check: is this a genuine answer, or a refusal/non-answer, in ANY language?
+// Independent verifier — uses a SEPARATE, stronger model (gpt-4o) than the one
+// that executed the task (gpt-4o-mini), so no model grades its own work.
 async function isGenuineAnswer(question, answer) {
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     temperature: 0,
     messages: [
       {
         role: 'system',
-        content: 'You judge whether an AI answer genuinely answers the question, in any language. Respond with only YES or NO. Respond NO if the answer is a refusal, an apology, a statement of not knowing, or a redirection to check elsewhere instead of answering. Respond YES only if it gives real, specific information that answers the question.',
+        content: 'You are an independent, skeptical verifier, separate from whatever system produced this answer. Judge it against TWO rules, in any language: (1) reject if it is a refusal, apology, statement of not knowing, or vague redirection instead of answering; (2) reject if it states a specific fact about something that changes over time (current officeholders, prices, rankings, recent events) WITHOUT a caveat that it may be outdated. Respond with only YES (passes both rules) or NO (fails either rule).',
       },
       {
         role: 'user',
@@ -77,7 +79,7 @@ async function doQA(inputText) {
     model: 'gpt-4o-mini',
     temperature: 0,
     messages: [
-      { role: 'system', content: 'Answer the question directly and concisely, in the SAME language as the question, in one or two sentences. If you genuinely cannot answer, say so clearly and briefly.' },
+      { role: 'system', content: 'Answer the question directly and concisely, in the SAME language as the question, in one or two sentences. If you genuinely cannot answer, say so clearly and briefly. If the question is about something that changes over time (current officeholders, prices, rankings, recent events), you MUST include a brief caveat that your information may be outdated.' },
       { role: 'user', content: inputText },
     ],
   });
