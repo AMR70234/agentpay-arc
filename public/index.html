@@ -489,6 +489,9 @@ async function runJob(){
       setTimeout(()=>{
         pulseFlow('flowPulse2');
         addLine('✓', `Transaction <b>${data.transaction.state}</b> — id <span style="color:var(--muted)">${data.transaction.id}</span>`);
+      if (data.transaction.explorerUrl) {
+        addLine('🔗', `<a href="${data.transaction.explorerUrl}" target="_blank" rel="noopener" style="color:var(--blue);">View on Arc Explorer ↗</a>`);
+      }
         setStatus('settled','accepted');
         toast('Payment settled on Arc testnet','ok');
         history.push(entry); renderHistory();
