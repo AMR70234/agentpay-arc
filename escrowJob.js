@@ -2,9 +2,6 @@ require('dotenv').config();
 const { executeTask } = require('./task');
 const { recordJob } = require('./reputation');
 
-// Circle App Kit — official Circle SDK for Send/Bridge/Swap/Unified Balance,
-// used here (via the Circle Wallets adapter) to move USDC between our
-// developer-controlled wallets, instead of a raw Circle API call.
 let appKitPromise = null;
 async function getAppKit() {
   if (!appKitPromise) {
@@ -39,6 +36,9 @@ async function transferUSDC(fromWalletAddress, toAddress, amount) {
   return { id: result.txHash, state: result.state, explorerUrl: result.explorerUrl };
 }
 
+const DISPUTE_WINDOW_MS = 8000;
+const pendingJobs = new Map();
+
 async function runEscrowJob(taskInput, amount) {
   if (!amount) amount = calculatePrice(taskInput);
   const log = [];
@@ -55,44 +55,101 @@ async function runEscrowJob(taskInput, amount) {
   const taskResult = await executeTask(taskInput);
   log.push(`📄 Result: "${taskResult.result}"`);
 
-  let finalTx;
+  const jobId = escrowTx.id;
+
   if (taskResult.accepted) {
-    log.push(`✅ Task accepted — releasing funds to worker...`);
-    finalTx = await transferUSDC(
-      process.env.ESCROW_WALLET_ADDRESS,
-      process.env.WORKER_WALLET_ADDRESS,
-      amount
-    );
-    log.push(`✅ Release transaction: ${finalTx.id} (${finalTx.state})`);
+    log.push(`✅ Task accepted — entering ${DISPUTE_WINDOW_MS / 1000}s dispute window before release...`);
+
+    pendingJobs.set(jobId, { status: 'pending', amount, taskResult });
+
+    const timer = setTimeout(async () => {
+      const job = pendingJobs.get(jobId);
+      if (!job || job.status !== 'pending') return;
+      try {
+        const finalTx = await transferUSDC(
+          process.env.ESCROW_WALLET_ADDRESS,
+          process.env.WORKER_WALLET_ADDRESS,
+          amount
+        );
+        job.status = 'released';
+        job.finalTx = finalTx;
+        recordJob(true);
+        console.log(`✅ Auto-released job ${jobId}: ${finalTx.id} (${finalTx.state})`);
+      } catch (err) {
+        console.error(`❌ Auto-release failed for job ${jobId}:`, err.message);
+      }
+    }, DISPUTE_WINDOW_MS);
+
+    pendingJobs.get(jobId).timer = timer;
+
+    log.forEach(line => console.log(line));
+
+    return {
+      accepted: true,
+      disputable: true,
+      jobId,
+      summary: taskResult.result,
+      taskType: taskResult.taskType,
+      amount,
+      escrowTx,
+      disputeWindowMs: DISPUTE_WINDOW_MS,
+      stats: undefined,
+    };
   } else {
     log.push(`❌ Task rejected — refunding client...`);
-    finalTx = await transferUSDC(
+    const finalTx = await transferUSDC(
       process.env.ESCROW_WALLET_ADDRESS,
       process.env.WALLET_ADDRESS,
       amount
     );
     log.push(`✅ Refund transaction: ${finalTx.id} (${finalTx.state})`);
+
+    const stats = recordJob(false);
+    log.push(`📊 Worker stats: ${stats.accepted}/${stats.totalJobs} accepted (${stats.acceptanceRate}%)`);
+    log.forEach(line => console.log(line));
+
+    return {
+      accepted: false,
+      disputable: false,
+      summary: taskResult.result,
+      taskType: taskResult.taskType,
+      amount,
+      finalTx,
+      stats,
+    };
   }
-
-  const stats = recordJob(taskResult.accepted);
-  log.push(`📊 Worker stats: ${stats.accepted}/${stats.totalJobs} accepted (${stats.acceptanceRate}%)`);
-
-  log.forEach(line => console.log(line));
-
-  return {
-    accepted: taskResult.accepted,
-    summary: taskResult.result,
-    taskType: taskResult.taskType,
-    amount,
-    escrowTx,
-    finalTx,
-    stats,
-  };
 }
 
-module.exports = { runEscrowJob, calculatePrice };
+async function disputeJob(jobId) {
+  const job = pendingJobs.get(jobId);
+  if (!job) return { ok: false, error: 'Job not found or already resolved' };
+  if (job.status !== 'pending') return { ok: false, error: `Job already ${job.status}` };
+
+  clearTimeout(job.timer);
+  job.status = 'disputed';
+
+  const finalTx = await transferUSDC(
+    process.env.ESCROW_WALLET_ADDRESS,
+    process.env.WALLET_ADDRESS,
+    job.amount
+  );
+  job.status = 'refunded';
+  job.finalTx = finalTx;
+  recordJob(false);
+
+  console.log(`⚠️ Job ${jobId} disputed — refunded to client: ${finalTx.id}`);
+  return { ok: true, status: 'refunded', finalTx };
+}
+
+function getJobStatus(jobId) {
+  const job = pendingJobs.get(jobId);
+  if (!job) return { status: 'unknown' };
+  return { status: job.status, finalTx: job.finalTx || null };
+}
+
+module.exports = { runEscrowJob, disputeJob, getJobStatus, calculatePrice };
 
 if (require.main === module) {
   const sampleText = "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.";
-  runEscrowJob(sampleText);
+  runEscrowJob(sampleText).then(r => console.log('\nFinal result:', r));
 }

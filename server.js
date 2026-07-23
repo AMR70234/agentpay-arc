@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const client = require('./circleClient');
-const { runEscrowJob } = require('./escrowJob');
+const { runEscrowJob, disputeJob, getJobStatus } = require('./escrowJob');
 const { getStats } = require('./reputation');
 
 const app = express();
@@ -33,6 +33,24 @@ app.post('/run-job', async (req, res) => {
     console.error('❌ Error in /run-job:', error.message);
     return res.status(500).json({ error: error.message });
   }
+});
+
+app.post('/dispute', async (req, res) => {
+  try {
+    const { jobId } = req.body;
+    if (!jobId) return res.status(400).json({ error: 'Missing jobId in request body' });
+    const result = await disputeJob(jobId);
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    return res.json(result);
+  } catch (error) {
+    console.error('Error in /dispute:', error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/job-status/:jobId', (req, res) => {
+  const result = getJobStatus(req.params.jobId);
+  res.json(result);
 });
 
 app.get('/balances', async (req, res) => {
