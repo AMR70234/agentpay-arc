@@ -89,7 +89,7 @@ app.get('/transactions', (req, res) => {
       status: r.status,
       amount: r.amount,
       taskInput: r.taskInput,
-      taskResult: r.taskResult ? JSON.parse(r.taskResult) : null,
+      taskResult: r.taskResult || null,
       createdAt: r.createdAt,
       txHash: r.txHash,
     }));
