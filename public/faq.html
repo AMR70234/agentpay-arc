@@ -96,6 +96,11 @@
     <div class="answer">The acceptance rules are type-specific: a summary must genuinely be shorter than the source, a sentiment analysis must return a valid classification with a reason, and a Q&A answer is rejected if the model admits it doesn't actually know.</div>
   </details>
 
+  <details>
+    <summary>Does the agent actually know about Arc and Circle, or just general knowledge?</summary>
+    <div class="answer">Both the worker's answers and the independent verifier are given accurate, current background on Arc and Circle — sourced from official docs rather than generic training data, including specifics like Circle's June 2025 NYSE listing and Arc's planned summer 2026 mainnet launch. This closed a real bug: without this context, the verifier sometimes rejected correct historical facts as "possibly outdated" simply because it wasn't confident they were true.</div>
+  </details>
+
   <div class="section-title">Honest limitations</div>
 
   <details>
