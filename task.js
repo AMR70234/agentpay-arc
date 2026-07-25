@@ -62,7 +62,7 @@ async function isGenuineAnswer(question, answer) {
     messages: [
       {
         role: 'system',
-        content: 'You are an independent, skeptical verifier, separate from whatever system produced this answer. Judge it against TWO rules, in any language: (1) reject if it is a refusal, apology, statement of not knowing, or vague redirection instead of answering; (2) reject if it states a specific fact about something that changes over time (current officeholders, prices, rankings, recent events) WITHOUT a caveat that it may be outdated. Respond with only YES (passes both rules) or NO (fails either rule).',
+        content: `You are an independent, skeptical verifier, separate from whatever system produced this answer. Judge it against TWO rules, in any language: (1) reject if it is a refusal, apology, statement of not knowing, or vague redirection instead of answering; (2) reject if it states a specific fact about something that changes over time (current officeholders, prices, rankings, ongoing/future events) WITHOUT a caveat that it may be outdated. Do NOT apply rule 2 to well-established historical facts (past events with a fixed, known date, like a company's IPO date or founding date) — those don't need a caveat. Respond with only YES (passes both rules) or NO (fails either rule).\n\n${ARC_CONTEXT}\n${CIRCLE_CONTEXT}`,
       },
       {
         role: 'user',
@@ -74,12 +74,22 @@ async function isGenuineAnswer(question, answer) {
   return verdict.startsWith('YES');
 }
 
+const ARC_CONTEXT = `Background knowledge about Arc (use this if the question is about Arc blockchain):
+Arc is Circle's Layer-1 blockchain, marketed as "the Economic OS for the internet" — a public, sovereign L1 (not an Ethereum Layer-2) purpose-built for stablecoin-native finance. Arc is built and operated by Circle Technology Services, LLC (a Circle Internet Group subsidiary); it is not an independent startup with separate named founders — it is a Circle-developed network. It uses USDC as its native gas token (no separate volatile token needed for fees), offers deterministic sub-second settlement finality, is EVM-compatible, and supports opt-in configurable privacy for compliance. Cross-chain transfers go through Circle's CCTP, and it integrates with Circle Gateway, institutional on/offramps, and Circle Payments Network (CPN).
+
+As of mid-2026: Arc's public testnet launched in October 2025 and has processed over 240 million transactions with roughly 1.5 million active wallets. Mainnet is planned for summer 2026, though Circle has described the exact timing and native token launch as still in an "exploration phase." A separate ARC token is planned with a 10 billion initial supply (60% ecosystem, 25% Circle, 15% long-term reserves), but it is not live yet — USDC remains the only gas token today. Institutional partners cited by Circle include Goldman Sachs, Mastercard, and Visa.
+`;
+
+const CIRCLE_CONTEXT = `Background knowledge about Circle (use this if the question is about Circle the company):
+Circle Internet Group is the company behind USDC, the second-largest stablecoin by market cap, fully backed 1:1 by cash and short-term US Treasuries, redeemable at par. Circle also operates Circle Mint (issuance/redemption), Circle Payments Network (CPN, for institutional cross-border settlement), CCTP (Cross-Chain Transfer Protocol, for native USDC transfers across chains without wrapped tokens), Circle Gateway, and the App Kit SDK (Send/Bridge/Swap). Circle went public on the NYSE in June 2025. Circle also builds Arc, its own Layer-1 blockchain (see above).
+`;
+
 async function doQA(inputText) {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     temperature: 0,
     messages: [
-      { role: 'system', content: 'Answer the question directly and concisely, in the SAME language as the question, in one or two sentences. If you genuinely cannot answer, say so clearly and briefly. If the question is about something that changes over time (current officeholders, prices, rankings, recent events), you MUST include a brief caveat that your information may be outdated.' },
+      { role: 'system', content: `Answer the question directly and concisely, in the SAME language as the question, in one or two sentences. If you genuinely cannot answer, say so clearly and briefly. If the question is about something that changes over time (current officeholders, prices, rankings, recent events), you MUST include a brief caveat that your information may be outdated.\n\n${ARC_CONTEXT}\n${CIRCLE_CONTEXT}` },
       { role: 'user', content: inputText },
     ],
   });
