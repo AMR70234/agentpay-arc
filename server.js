@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const client = require('./circleClient');
 const { runEscrowJob, disputeJob, getJobStatus } = require('./escrowJob');
+const { getRecentTransactions } = require('./db');
 const { getStats } = require('./reputation');
 
 const app = express();
@@ -78,6 +79,22 @@ app.get('/balances', async (req, res) => {
     console.error('❌ Error in /balances:', error.message);
     res.status(500).json({ error: error.message });
   }
+});
+
+app.get('/transactions', (req, res) => {
+  getRecentTransactions(50, (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const parsed = rows.map(r => ({
+      jobId: r.jobId,
+      status: r.status,
+      amount: r.amount,
+      taskInput: r.taskInput,
+      taskResult: r.taskResult ? JSON.parse(r.taskResult) : null,
+      createdAt: r.createdAt,
+      txHash: r.txHash,
+    }));
+    res.json(parsed);
+  });
 });
 
 app.get('/reputation', (req, res) => {

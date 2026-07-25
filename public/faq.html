@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AgentPay · FAQ</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0D10; --panel:#14181D; --border:#232830; --text:#E8EAED;
+    --muted:#8B93A0; --blue:#2775CA;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;margin:0;padding:40px 24px;}
+  .wrap{max-width:820px;margin:0 auto;}
+  nav{display:flex;gap:18px;margin-bottom:28px;font-family:'JetBrains Mono',monospace;font-size:12px;flex-wrap:wrap;}
+  nav a{color:var(--muted);text-decoration:none;}
+  nav a.active{color:var(--text);}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);letter-spacing:.08em;margin-bottom:10px;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:32px;margin:0 0 12px;}
+  .sub{color:var(--muted);font-size:14.5px;margin-bottom:28px;}
+  .section-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:28px 0 12px;}
+  details{background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+  summary{padding:14px 16px;cursor:pointer;font-size:14px;font-weight:500;list-style:none;display:flex;justify-content:space-between;align-items:center;}
+  summary::-webkit-details-marker{display:none;}
+  summary::after{content:'+';color:var(--muted);font-size:16px;}
+  details[open] summary::after{content:'\2212';}
+  .answer{padding:0 16px 16px;font-size:13px;color:var(--muted);line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a href="/">Home</a>
+    <a href="/how-it-works.html">How it works</a>
+    <a href="/security.html">Security</a>
+    <a href="/transactions.html">Transactions</a>
+    <a href="/reputation.html">Reputation</a>
+    <a href="/faq.html" class="active">FAQ</a>
+    <a href="/compare.html">Compare</a>
+  </nav>
+
+  <div class="eyebrow">QUESTIONS AND ANSWERS</div>
+  <h1>Frequently asked questions</h1>
+  <p class="sub">Honest answers about how AgentPay works and where it still falls short.</p>
+
+  <div class="section-title">The basics</div>
+
+  <details>
+    <summary>What is AgentPay in one sentence?</summary>
+    <div class="answer">An autonomous payment system where a client agent and a worker agent transact USDC on Arc — the client escrows a fee, the worker classifies and completes the task, and payment settles or refunds the instant the result is verified.</div>
+  </details>
+
+  <details>
+    <summary>Is this real money?</summary>
+    <div class="answer">No — this runs on Arc Testnet with test USDC. The goal is proving the pattern works before any real deployment.</div>
+  </details>
+
+  <details>
+    <summary>Why hold funds in escrow instead of paying directly?</summary>
+    <div class="answer">So the client has a real window to review the work before funds settle permanently with the worker.</div>
+  </details>
+
+  <details>
+    <summary>What happens if the client disputes a result?</summary>
+    <div class="answer">Within the 8-second window, the client can dispute and get an immediate refund — before the automatic release to the worker fires.</div>
+  </details>
+
+  <div class="section-title">How payment actually moves</div>
+
+  <details>
+    <summary>How are USDC transfers actually executed?</summary>
+    <div class="answer">Through Circle's official App Kit (@circle-fin/app-kit), using the Circle Wallets adapter to connect directly to the project's developer-controlled wallets — a single kit.send() call replaces a raw Circle API request.</div>
+  </details>
+
+  <details>
+    <summary>Why Arc and USDC specifically?</summary>
+    <div class="answer">USDC as native gas means the agents never need to hold a separate volatile asset just to pay network fees. Sub-second finality makes agent-to-agent payment practical at the speed agents actually operate.</div>
+  </details>
+
+  <div class="section-title">Verification and quality</div>
+
+  <details>
+    <summary>Who checks if the worker's answer is actually good?</summary>
+    <div class="answer">A separate, independent model — not the one that produced the answer. It rejects vague non-answers and confidently-stated time-sensitive facts unless they carry an explicit outdated-information caveat.</div>
+  </details>
+
+  <details>
+    <summary>Can the worker get paid for a bad answer?</summary>
+    <div class="answer">The acceptance rules are type-specific: a summary must genuinely be shorter than the source, a sentiment analysis must return a valid classification with a reason, and a Q&A answer is rejected if the model admits it doesn't actually know.</div>
+  </details>
+
+  <div class="section-title">Honest limitations</div>
+
+  <details>
+    <summary>What's not finished yet?</summary>
+    <div class="answer">Escrow is orchestrated by this server rather than an on-chain smart contract. There's only one worker agent today. Reputation is stored in a local file that can reset on redeploy.</div>
+  </details>
+
+  <details>
+    <summary>If it's not production-ready, what's the point?</summary>
+    <div class="answer">To demonstrate a working, tested proof of concept — real transactions on Arc Testnet, verified end-to-end. It shows the pattern works, not that it's finished.</div>
+  </details>
+
+</div>
+</body>
+</html>

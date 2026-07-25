@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { executeTask } = require('./task');
 const { recordJob } = require('./reputation');
+const { recordTransaction } = require('./db');
 
 let appKitPromise = null;
 async function getAppKit() {
@@ -74,6 +75,7 @@ async function runEscrowJob(taskInput, amount) {
         job.status = 'released';
         job.finalTx = finalTx;
         recordJob(true);
+        recordTransaction(jobId, 'released', amount, taskInput, taskResult, finalTx.id);
         console.log(`✅ Auto-released job ${jobId}: ${finalTx.id} (${finalTx.state})`);
       } catch (err) {
         console.error(`❌ Auto-release failed for job ${jobId}:`, err.message);
@@ -105,6 +107,7 @@ async function runEscrowJob(taskInput, amount) {
     log.push(`✅ Refund transaction: ${finalTx.id} (${finalTx.state})`);
 
     const stats = recordJob(false);
+    recordTransaction(jobId, 'refunded', amount, taskInput, taskResult, finalTx.id);
     log.push(`📊 Worker stats: ${stats.accepted}/${stats.totalJobs} accepted (${stats.acceptanceRate}%)`);
     log.forEach(line => console.log(line));
 
@@ -136,6 +139,7 @@ async function disputeJob(jobId) {
   job.status = 'refunded';
   job.finalTx = finalTx;
   recordJob(false);
+  recordTransaction(jobId, 'refunded', job.amount, null, job.taskResult, finalTx.id);
 
   console.log(`⚠️ Job ${jobId} disputed — refunded to client: ${finalTx.id}`);
   return { ok: true, status: 'refunded', finalTx };
