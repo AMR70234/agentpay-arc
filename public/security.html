@@ -78,6 +78,14 @@
     </div>
 
     <div class="layer-card">
+      <i class="ti ti-building-bank"></i>
+      <div>
+        <h3>On-chain escrow</h3>
+        <p>Funds are held by a smart contract (AgentPayEscrow.sol) deployed on Arc Testnet, not by this application server. Built on OpenZeppelin's audited primitives — ReentrancyGuard, Ownable, Pausable — with an owner-controlled emergency stop.</p>
+      </div>
+    </div>
+
+    <div class="layer-card">
       <i class="ti ti-link"></i>
       <div>
         <h3>Explorer transparency</h3>
@@ -91,7 +99,7 @@
     <div class="limitations">
       <div class="limitation-item">
         <i class="ti ti-alert-triangle"></i>
-        <p><b>Off-chain escrow.</b> Settlement is orchestrated by this server, not a deployed smart contract — funds move via Circle's wallet APIs directly.</p>
+        <p><b>Unaudited contract.</b> AgentPayEscrow.sol is built on OpenZeppelin's audited primitives, but hasn't been reviewed as a whole by a professional security firm.</p>
       </div>
       <div class="limitation-item">
         <i class="ti ti-alert-triangle"></i>

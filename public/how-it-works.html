@@ -73,8 +73,8 @@
   <div class="step">
     <div><div class="step-num">3</div><div class="step-line"></div></div>
     <div class="step-content">
-      <h3>Funds are escrowed via Circle App Kit</h3>
-      <p>The fee moves from the client's Circle wallet into a dedicated escrow wallet, using Circle's official App Kit (<code>kit.send()</code>) — a real on-chain USDC transfer on Arc Testnet, not held by this server's own logic.</p>
+      <h3>Funds are escrowed on-chain</h3>
+      <p>The fee moves into the <code>AgentPayEscrow.sol</code> smart contract on Arc Testnet, signed via Circle's wallet APIs — not held by this server's own logic.</p>
     </div>
   </div>
 
@@ -98,7 +98,7 @@
     <div><div class="step-num">6</div></div>
     <div class="step-content">
       <h3>Settlement</h3>
-      <p>No dispute: funds release to the worker automatically via Circle App Kit. Disputed: the client is refunded immediately. Rejected results refund the client right away too.</p>
+      <p>No dispute: the contract releases funds to the worker automatically. Disputed: the client is refunded on-chain immediately. Rejected results refund the client right away too.</p>
     </div>
   </div>
 

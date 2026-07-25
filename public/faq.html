@@ -63,6 +63,11 @@
   </details>
 
   <details>
+    <summary>Is escrow handled by a smart contract?</summary>
+    <div class="answer">Yes. AgentPayEscrow.sol is deployed on Arc Testnet, built on OpenZeppelin's audited primitives (ReentrancyGuard, Ownable, Pausable). Funds live in the contract itself, not in a server-controlled wallet.</div>
+  </details>
+
+  <details>
     <summary>What happens if the client disputes a result?</summary>
     <div class="answer">Within the 8-second window, the client can dispute and get an immediate refund — before the automatic release to the worker fires.</div>
   </details>
@@ -71,7 +76,7 @@
 
   <details>
     <summary>How are USDC transfers actually executed?</summary>
-    <div class="answer">Through Circle's official App Kit (@circle-fin/app-kit), using the Circle Wallets adapter to connect directly to the project's developer-controlled wallets — a single kit.send() call replaces a raw Circle API request.</div>
+    <div class="answer">Escrow and settlement (createJob, release, dispute) call functions directly on the deployed smart contract via Circle's contract execution API. The USDC approval step also runs through Circle's wallet APIs, signed by the client's developer-controlled wallet.</div>
   </details>
 
   <details>
