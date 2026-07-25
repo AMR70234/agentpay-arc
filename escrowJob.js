@@ -1,23 +1,9 @@
 require('dotenv').config();
+const crypto = require('crypto');
+const { callContract, pollTransaction } = require('./contractClient');
 const { executeTask } = require('./task');
 const { recordJob } = require('./reputation');
 const { recordTransaction } = require('./db');
-
-let appKitPromise = null;
-async function getAppKit() {
-  if (!appKitPromise) {
-    appKitPromise = (async () => {
-      const { createCircleWalletsAdapter } = await import('@circle-fin/adapter-circle-wallets');
-      const { AppKit } = await import('@circle-fin/app-kit');
-      const adapter = createCircleWalletsAdapter({
-        apiKey: process.env.CIRCLE_API_KEY,
-        entitySecret: process.env.CIRCLE_ENTITY_SECRET,
-      });
-      return { kit: new AppKit(), adapter };
-    })();
-  }
-  return appKitPromise;
-}
 
 function calculatePrice(inputText) {
   const wordCount = inputText.trim().split(/\s+/).length;
@@ -26,15 +12,20 @@ function calculatePrice(inputText) {
   return '2';
 }
 
-async function transferUSDC(fromWalletAddress, toAddress, amount) {
-  const { kit, adapter } = await getAppKit();
-  const result = await kit.send({
-    from: { adapter, chain: 'Arc_Testnet', address: fromWalletAddress },
-    to: toAddress,
-    amount: String(amount),
-    token: 'USDC',
+function toUnits(amount) {
+  return String(Math.round(parseFloat(amount) * 1000000));
+}
+
+async function approveUSDC(amount) {
+  const amountUnits = toUnits(amount);
+  const approveRes = await callContract({
+    walletId: process.env.WALLET_ID,
+    contractAddress: process.env.USDC_TOKEN_ADDRESS,
+    abiFunctionSignature: 'approve(address,uint256)',
+    abiParameters: [process.env.ESCROW_CONTRACT_ADDRESS, amountUnits],
   });
-  return { id: result.txHash, state: result.state, explorerUrl: result.explorerUrl };
+  const tx = await pollTransaction(approveRes.data.id);
+  return tx.state === 'COMPLETE';
 }
 
 const DISPUTE_WINDOW_MS = 8000;
@@ -42,49 +33,53 @@ const pendingJobs = new Map();
 
 async function runEscrowJob(taskInput, amount) {
   if (!amount) amount = calculatePrice(taskInput);
-  const log = [];
 
-  log.push(`💰 Escrowing ${amount} USDC from client...`);
-  const escrowTx = await transferUSDC(
-    process.env.WALLET_ADDRESS,
-    process.env.ESCROW_WALLET_ADDRESS,
-    amount
-  );
-  log.push(`✅ Escrow transaction: ${escrowTx.id} (${escrowTx.state})`);
+  const approved = await approveUSDC(amount);
+  if (!approved) {
+    return { accepted: false, disputable: false, summary: 'USDC approval failed.', taskType: 'error', amount, finalTx: null, stats: null };
+  }
 
-  log.push(`🤖 Worker agent executing task...`);
+  const jobId = '0x' + crypto.createHash('sha256').update(crypto.randomUUID()).digest('hex');
+  console.log(`On-chain: creating job ${jobId}, escrowing ${amount} USDC...`);
+
+  const createRes = await callContract({
+    walletId: process.env.WALLET_ID,
+    abiFunctionSignature: 'createJob(bytes32,address,uint256)',
+    abiParameters: [jobId, process.env.WORKER_WALLET_ADDRESS, toUnits(amount)],
+  });
+  const createTx = await pollTransaction(createRes.data.id);
+  if (createTx.state !== 'COMPLETE') {
+    return { accepted: false, disputable: false, summary: 'On-chain escrow failed.', taskType: 'error', amount, finalTx: null, stats: null };
+  }
+  console.log(`Escrow confirmed on-chain: ${createTx.txHash}`);
+
+  console.log('Worker agent executing task...');
   const taskResult = await executeTask(taskInput);
-  log.push(`📄 Result: "${taskResult.result}"`);
-
-  const jobId = escrowTx.id;
+  console.log(`Result: "${taskResult.result}"`);
 
   if (taskResult.accepted) {
-    log.push(`✅ Task accepted — entering ${DISPUTE_WINDOW_MS / 1000}s dispute window before release...`);
-
-    pendingJobs.set(jobId, { status: 'pending', amount, taskResult });
+    pendingJobs.set(jobId, { status: 'pending', amount, taskResult, taskInput });
 
     const timer = setTimeout(async () => {
       const job = pendingJobs.get(jobId);
       if (!job || job.status !== 'pending') return;
       try {
-        const finalTx = await transferUSDC(
-          process.env.ESCROW_WALLET_ADDRESS,
-          process.env.WORKER_WALLET_ADDRESS,
-          amount
-        );
+        const releaseRes = await callContract({
+          walletId: process.env.WORKER_WALLET_ID,
+          abiFunctionSignature: 'release(bytes32)',
+          abiParameters: [jobId],
+        });
+        const releaseTx = await pollTransaction(releaseRes.data.id);
         job.status = 'released';
-        job.finalTx = finalTx;
+        job.finalTx = releaseRes.data;
         recordJob(true);
-        recordTransaction(jobId, 'released', amount, taskInput, taskResult, finalTx.id);
-        console.log(`✅ Auto-released job ${jobId}: ${finalTx.id} (${finalTx.state})`);
+        recordTransaction(jobId, 'released', amount, taskInput, taskResult, releaseTx.txHash);
+        console.log(`On-chain auto-release for job ${jobId}: ${releaseRes.data.id}`);
       } catch (err) {
-        console.error(`❌ Auto-release failed for job ${jobId}:`, err.message);
+        console.error(`Auto-release failed for job ${jobId}:`, err.message);
       }
     }, DISPUTE_WINDOW_MS);
-
     pendingJobs.get(jobId).timer = timer;
-
-    log.forEach(line => console.log(line));
 
     return {
       accepted: true,
@@ -93,23 +88,20 @@ async function runEscrowJob(taskInput, amount) {
       summary: taskResult.result,
       taskType: taskResult.taskType,
       amount,
-      escrowTx,
+      escrowTx: { id: createRes.data.id, state: createTx.state, txHash: createTx.txHash },
       disputeWindowMs: DISPUTE_WINDOW_MS,
       stats: undefined,
     };
   } else {
-    log.push(`❌ Task rejected — refunding client...`);
-    const finalTx = await transferUSDC(
-      process.env.ESCROW_WALLET_ADDRESS,
-      process.env.WALLET_ADDRESS,
-      amount
-    );
-    log.push(`✅ Refund transaction: ${finalTx.id} (${finalTx.state})`);
-
+    console.log('Task rejected — disputing on-chain (client wallet)...');
+    const disputeRes = await callContract({
+      walletId: process.env.WALLET_ID,
+      abiFunctionSignature: 'dispute(bytes32)',
+      abiParameters: [jobId],
+    });
+    const disputeTx = await pollTransaction(disputeRes.data.id);
     const stats = recordJob(false);
-    recordTransaction(jobId, 'refunded', amount, taskInput, taskResult, finalTx.id);
-    log.push(`📊 Worker stats: ${stats.accepted}/${stats.totalJobs} accepted (${stats.acceptanceRate}%)`);
-    log.forEach(line => console.log(line));
+    recordTransaction(jobId, 'refunded', amount, taskInput, taskResult, disputeTx.txHash);
 
     return {
       accepted: false,
@@ -117,7 +109,7 @@ async function runEscrowJob(taskInput, amount) {
       summary: taskResult.result,
       taskType: taskResult.taskType,
       amount,
-      finalTx,
+      finalTx: disputeRes.data,
       stats,
     };
   }
@@ -131,18 +123,20 @@ async function disputeJob(jobId) {
   clearTimeout(job.timer);
   job.status = 'disputed';
 
-  const finalTx = await transferUSDC(
-    process.env.ESCROW_WALLET_ADDRESS,
-    process.env.WALLET_ADDRESS,
-    job.amount
-  );
-  job.status = 'refunded';
-  job.finalTx = finalTx;
-  recordJob(false);
-  recordTransaction(jobId, 'refunded', job.amount, null, job.taskResult, finalTx.id);
+  const disputeRes = await callContract({
+    walletId: process.env.WALLET_ID,
+    abiFunctionSignature: 'dispute(bytes32)',
+    abiParameters: [jobId],
+  });
+  const disputeTx = await pollTransaction(disputeRes.data.id);
 
-  console.log(`⚠️ Job ${jobId} disputed — refunded to client: ${finalTx.id}`);
-  return { ok: true, status: 'refunded', finalTx };
+  job.status = 'refunded';
+  job.finalTx = disputeRes.data;
+  recordJob(false);
+  recordTransaction(jobId, 'refunded', job.amount, job.taskInput, job.taskResult, disputeTx.txHash);
+
+  console.log(`⚠️ Job ${jobId} disputed — refunded on-chain: ${disputeRes.data.id}`);
+  return { ok: true, status: 'refunded', finalTx: disputeRes.data };
 }
 
 function getJobStatus(jobId) {
@@ -152,8 +146,3 @@ function getJobStatus(jobId) {
 }
 
 module.exports = { runEscrowJob, disputeJob, getJobStatus, calculatePrice };
-
-if (require.main === module) {
-  const sampleText = "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.";
-  runEscrowJob(sampleText).then(r => console.log('\nFinal result:', r));
-}
