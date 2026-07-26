@@ -27,9 +27,9 @@ Two additions on top of the base flow, ported from lessons learned in a related 
 - **Independent verification.** The worker executes tasks with `gpt-4o-mini`, but a *separate*, stronger model (`gpt-4o`) independently judges whether the result is genuine — rather than the same model grading its own work. It also rejects confident-sounding answers about time-sensitive facts (current officeholders, prices, rankings) unless they include an explicit "may be outdated" caveat.
 - **Dispute window.** Accepted jobs no longer release instantly. Funds sit in escrow for an 8-second window during which the client can dispute the result via `POST /dispute` and get refunded before the automatic release timer fires.
 
-## Circle App Kit
+## On-chain escrow (smart contract)
 
-USDC transfers in the escrow flow (`escrowJob.js`) run through Circle's official **App Kit** (`@circle-fin/app-kit`), using the `@circle-fin/adapter-circle-wallets` adapter to connect directly to the project's existing Developer-Controlled Wallets — no separate wallet setup needed. This replaces a raw Circle API call with a single `kit.send()` call, using the same App Kit SDK mentioned as a core Arc product for this hackathon.
+Escrow logic runs on `AgentPayEscrow.sol`, deployed on Arc Testnet via Circle's Smart Contract Platform — built on OpenZeppelin's audited primitives (ReentrancyGuard, Ownable, Pausable). `escrowJob.js` calls the contract's functions (`createJob`, `release`, `dispute`) directly through Circle's Contract Execution API, rather than moving funds through a raw wallet-to-wallet transfer. The contract's owner was set explicitly at deploy time to the client wallet, avoiding a known pitfall where Circle's own deployer address ends up as the on-chain owner by default.
 
 ## Why Arc + USDC
 
@@ -94,7 +94,7 @@ Fees aren't fixed. The worker prices each job based on task length:
 
 | Layer | Technology |
 |---|---|
-| Wallets & settlement | Circle App Kit (`@circle-fin/app-kit`) with the Circle Wallets adapter, on top of Developer-Controlled Wallets |
+| Wallets & settlement | Circle Developer-Controlled Wallets SDK + Contract Execution API |
 | Blockchain | Arc Testnet |
 | Task execution | OpenAI (gpt-4o-mini) |
 | Backend | Node.js, Express |
