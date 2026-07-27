@@ -105,3 +105,11 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
+
+// Keep-Alive ping every 5 minutes, to reduce Render free-tier cold starts
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
+if (RENDER_URL) {
+  setInterval(() => {
+    fetch(RENDER_URL).catch(() => {});
+  }, 5 * 60 * 1000);
+}
