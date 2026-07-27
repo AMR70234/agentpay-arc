@@ -1,5 +1,31 @@
 [
   {
+    "jobId": "0x3d3b8874619753cf2ceef79bcfc2bed2691764d42315d373c5c845cafc363306",
+    "status": "released",
+    "amount": "0.5",
+    "taskInput": "arc",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is Circle's Layer-1 blockchain designed for stablecoin-native finance, utilizing USDC as its gas token. It features deterministic sub-second settlement finality and is EVM-compatible, with a public testnet launched in October 2025 and mainnet planned for summer 2026.",
+      "taskType": "qa"
+    },
+    "txHash": "0x9de99f179f5bd49c4b8d15388119c8a3d12d20470eaa643c55d5f03b6bc72830",
+    "createdAt": "2026-07-26T01:45:27.527Z"
+  },
+  {
+    "jobId": "0x50670067c678ce7d2165431fb851c606429d99fbe55cc997e5bd2a25fae7a8f7",
+    "status": "released",
+    "amount": "1",
+    "taskInput": "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is a Layer-1 blockchain by Circle for stablecoin finance, using USDC and enabling rapid transactions and developer tools.",
+      "taskType": "summarize"
+    },
+    "txHash": "0x51916bd8a4d9b56ae82087a347dd6994ce74f23ee53ff6fa5726f3280799fbe0",
+    "createdAt": "2026-07-26T01:44:15.429Z"
+  },
+  {
     "jobId": "0x7c66734ed3e26c1d0197890886542e8720b2cfacdbec0398db83c88d8e80946f",
     "status": "released",
     "amount": "0.5",
