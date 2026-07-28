@@ -16,10 +16,13 @@
     "@circle-fin/developer-controlled-wallets": "^10.8.0",
     "@circle-fin/smart-contract-platform": "^10.8.0",
     "@circle-fin/x402-batching": "^3.2.0",
+    "@x402/core": "^2.20.0",
+    "@x402/evm": "^2.20.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "openai": "^6.47.0"
+    "openai": "^6.47.0",
+    "viem": "^2.55.10"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^5.6.1",

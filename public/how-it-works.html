@@ -73,13 +73,20 @@
   <div class="step">
     <div><div class="step-num">3</div><div class="step-line"></div></div>
     <div class="step-content">
+      <h3>Client agent picks a worker</h3>
+      <p>With two competing worker agents available, the client scores each one on wallet-tracked reputation and price, and picks the winner — a real decision computed at runtime, not a fixed assignment.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div><div class="step-num">4</div><div class="step-line"></div></div>
+    <div class="step-content">
       <h3>Funds are escrowed on-chain</h3>
       <p>The fee moves into the <code>AgentPayEscrow.sol</code> smart contract on Arc Testnet, signed via Circle's wallet APIs — not held by this server's own logic.</p>
     </div>
   </div>
 
   <div class="step">
-    <div><div class="step-num">4</div><div class="step-line"></div></div>
+    <div><div class="step-num">5</div><div class="step-line"></div></div>
     <div class="step-content">
       <h3>Worker executes, a separate model verifies</h3>
       <p>One model produces the result. A different, independent model checks it — rejecting non-answers and unqualified time-sensitive claims. No model grades its own work.</p>
@@ -87,7 +94,7 @@
   </div>
 
   <div class="step">
-    <div><div class="step-num">5</div><div class="step-line"></div></div>
+    <div><div class="step-num">6</div><div class="step-line"></div></div>
     <div class="step-content">
       <h3>A dispute window opens</h3>
       <p>Accepted results aren't paid out instantly. The client has an 8-second window to dispute before the automatic release fires.</p>
@@ -95,13 +102,34 @@
   </div>
 
   <div class="step">
-    <div><div class="step-num">6</div></div>
+    <div><div class="step-num">7</div></div>
     <div class="step-content">
       <h3>Settlement</h3>
       <p>No dispute: the contract releases funds to the worker automatically. Disputed: the client is refunded on-chain immediately. Rejected results refund the client right away too.</p>
     </div>
   </div>
 
+  <div style="margin-top:36px;padding:20px;background:var(--panel);border:1px solid var(--border);border-radius:12px;">
+    <div class="eyebrow" style="margin-bottom:8px;">BEYOND ESCROW</div>
+    <h3 style="margin:0 0 8px;">Nanopayments via Circle Gateway</h3>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.6;">A separate, live endpoint accepts sub-cent, gas-free payments through Circle's x402-batching middleware — funded by a real deposit to the official GatewayWallet contract on Arc Testnet.</p>
+    <button onclick="testNanopayment()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;">Test it live</button>
+    <pre id="nanopayResult" style="margin-top:12px;font-size:11px;color:var(--muted);background:var(--panel-2);padding:10px;border-radius:8px;white-space:pre-wrap;display:none;"></pre>
+  </div>
+
 </div>
+<script>
+async function testNanopayment() {
+  const out = document.getElementById('nanopayResult');
+  out.style.display = 'block';
+  out.textContent = 'Calling /priority-status...';
+  try {
+    const res = await fetch('/priority-status');
+    out.textContent = `HTTP ${res.status} ${res.statusText}\n` + (res.status === 402 ? 'Genuine x402 payment required — Nanopayments middleware confirmed live.' : await res.text());
+  } catch (e) {
+    out.textContent = 'Could not reach the endpoint.';
+  }
+}
+</script>
 </body>
 </html>

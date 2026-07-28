@@ -104,6 +104,18 @@ app.get('/reputation', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
+// Nanopayments-protected endpoint: pay a sub-cent fee via Circle Gateway
+// for priority processing, separate from the main escrow flow.
+const { createGatewayMiddleware } = require('@circle-fin/x402-batching/server');
+const gateway = createGatewayMiddleware({ sellerAddress: process.env.WALLET_ADDRESS, facilitatorUrl: 'https://gateway-api-testnet.circle.com', networks: ['eip155:5042002'] });
+
+app.get('/priority-status', gateway.require('$0.001'), (req, res) => {
+  res.json({
+    priority: true,
+    message: 'Payment verified via Circle Gateway Nanopayments — priority access granted.',
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
