@@ -147,3 +147,13 @@ OPENAI_API_KEY=
 ## Team
 
 Built for the Programmable Money Hackathon (Arc × Encode Club), Agentic Economy track.
+
+## Multi-worker competition
+
+Two independent worker agents, each with its own wallet and its own wallet-linked reputation record. Before creating a job, the client agent scores each worker on a combination of acceptance rate and price, and picks the winner — a real decision, not a fixed assignment. Every job records its outcome against the specific worker that handled it, so reputations diverge naturally as each worker builds its own track record. The smart contract itself required zero changes; it already accepts any worker address as a parameter.
+
+## Circle Gateway Nanopayments — live and verified
+
+Explored Circle's Nanopayments (built on Circle Gateway, using the x402 protocol and EIP-3009 signed authorizations) as a way to move toward sub-cent, per-step payments. Went beyond exploration: approved USDC to the official GatewayWallet contract on Arc Testnet (`0x0077777d7EBA4688BDeF3E311b846F25870A19B9`, confirmed against Arc's own docs), deposited 1 USDC, and confirmed the balance via Circle's Gateway API (`gateway-api-testnet.circle.com`).
+
+A real, funded Gateway balance now exists for this project on Arc — the foundation for future per-step, sub-cent agent-to-agent payments, distinct from the primary escrow flow.
