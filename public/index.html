@@ -40,6 +40,7 @@
   .sub{color:var(--muted);font-size:15px;line-height:1.65;max-width:640px;}
 
   .rail{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:stretch;margin:32px 0;}
+  .worker2-row{margin-top:12px;}
   .agent{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;}
   .agent-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
   .agent-role{font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px;}
@@ -246,7 +247,9 @@
         <button class="icon-btn" onclick="copyAddr('workerAddr', this)" aria-label="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
       </div>
     </div>
-    <div class="agent">
+  </div>
+  <div class="worker2-row">
+    <div class="agent" style="max-width:320px;margin:0 auto;border:1px dashed var(--border);">
       <div class="agent-top">
         <div><div class="agent-role">Worker Agent 2</div><div class="agent-name">Competing on price</div></div>
         <div class="balance loading" id="worker2Balance"><div class="num">···</div><div class="lbl">USDC</div></div>
