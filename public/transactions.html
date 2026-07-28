@@ -62,15 +62,26 @@ async function loadTransactions() {
       <table>
         <thead><tr><th>Time</th><th>Status</th><th>Task</th><th>Amount</th><th>Explorer</th></tr></thead>
         <tbody>
-          ${rows.map(r => `
+          ${rows.map(r => {
+            const isNanopay = r.jobId && r.jobId.startsWith('0xnano');
+            const label = isNanopay
+              ? '<span style="color:var(--blue);">⚡ Nanopayment (priority access)</span>'
+              : ((r.taskResult && r.taskResult.result) ? r.taskResult.result.slice(0, 80) : (r.taskInput || '').slice(0, 80));
+            const explorerCell = r.txHash
+              ? `<a href="https://testnet.arcscan.app/tx/${r.txHash}" target="_blank" rel="noopener" style="color:var(--blue);">View ↗</a>`
+              : (isNanopay
+                  ? '<span style="color:var(--muted);" title="Nanopayments settle offchain instantly, then batch onchain later">Batched offchain</span>'
+                  : '<span style="color:var(--muted);">pending</span>');
+            return `
             <tr>
               <td>${new Date(r.createdAt).toLocaleString()}</td>
               <td><span class="status-pill ${r.status}">${r.status}</span></td>
-              <td>${(r.taskResult && r.taskResult.result) ? r.taskResult.result.slice(0, 80) : (r.taskInput || '').slice(0, 80)}</td>
+              <td>${label}</td>
               <td>${r.amount} USDC</td>
-              <td>${r.txHash ? `<a href="https://testnet.arcscan.app/tx/${r.txHash}" target="_blank" rel="noopener" style="color:var(--blue);">View ↗</a>` : '<span style="color:var(--muted);">pending</span>'}</td>
+              <td>${explorerCell}</td>
             </tr>
-          `).join('')}
+          `;
+          }).join('')}
         </tbody>
       </table>
     `;

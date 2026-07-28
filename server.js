@@ -128,6 +128,9 @@ app.post('/nanopay-demo', async (req, res) => {
       rpcUrl: process.env.NANOPAY_RPC_URL,
     });
     const response = await client.pay(`http://localhost:${PORT}/priority-status`);
+    const { recordTransaction } = require('./db');
+    const jobId = '0xnano' + Date.now();
+    recordTransaction(jobId, 'released', '0.001', 'Nanopayments priority access', response.data, null);
     res.json({ ok: true, result: response.data });
   } catch (error) {
     res.status(500).json({ ok: false, error: error.message });

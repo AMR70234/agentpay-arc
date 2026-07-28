@@ -1,5 +1,29 @@
 [
   {
+    "jobId": "0xnano1785214664471",
+    "status": "released",
+    "amount": "0.001",
+    "taskInput": "Nanopayments priority access",
+    "taskResult": {
+      "priority": true,
+      "message": "Payment verified via Circle Gateway Nanopayments — priority access granted."
+    },
+    "txHash": null,
+    "createdAt": "2026-07-28T04:57:44.471Z"
+  },
+  {
+    "jobId": "0xnano1785214609400",
+    "status": "released",
+    "amount": "0.001",
+    "taskInput": "Nanopayments priority access",
+    "taskResult": {
+      "priority": true,
+      "message": "Payment verified via Circle Gateway Nanopayments — priority access granted."
+    },
+    "txHash": null,
+    "createdAt": "2026-07-28T04:56:49.400Z"
+  },
+  {
     "jobId": "0xd75c61d2e992f60ed0012f504dc6199a343e664b5577bea6397c956416406d32",
     "status": "released",
     "amount": "0.45",
