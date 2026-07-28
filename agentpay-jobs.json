@@ -1,5 +1,18 @@
 [
   {
+    "jobId": "0xd75c61d2e992f60ed0012f504dc6199a343e664b5577bea6397c956416406d32",
+    "status": "released",
+    "amount": "0.45",
+    "taskInput": "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance.",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is a Layer-1 blockchain by Circle for stablecoin finance.",
+      "taskType": "summarize"
+    },
+    "txHash": "0xae6d907a753b993ba362e90b7f693177d4be41e6f077fefc45d29153be714d0e",
+    "createdAt": "2026-07-28T02:35:36.989Z"
+  },
+  {
     "jobId": "0x3d3b8874619753cf2ceef79bcfc2bed2691764d42315d373c5c845cafc363306",
     "status": "released",
     "amount": "0.5",

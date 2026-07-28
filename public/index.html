@@ -246,6 +246,15 @@
         <button class="icon-btn" onclick="copyAddr('workerAddr', this)" aria-label="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
       </div>
     </div>
+    <div class="agent">
+      <div class="agent-top">
+        <div><div class="agent-role">Worker Agent 2</div><div class="agent-name">Competing on price</div></div>
+        <div class="balance loading" id="worker2Balance"><div class="num">···</div><div class="lbl">USDC</div></div>
+      </div>
+      <div class="addr-row"><span class="addr" id="worker2Addr">0x1d27564cc8751eea468ab260f995990a5a9133fd</span>
+        <button class="icon-btn" onclick="copyAddr('worker2Addr', this)" aria-label="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+      </div>
+    </div>
   </div>
 
   <div class="panel">
@@ -383,7 +392,7 @@ async function loadBalances(){
     const res = await fetch(`${API_BASE}/balances`);
     const data = await res.json();
     if(!res.ok) throw new Error(data.error||'failed');
-    ['client','escrow','worker'].forEach(k=>{
+    ['client','escrow','worker','worker2'].forEach(k=>{
       const el = document.getElementById(k+'Balance');
       el.classList.remove('loading');
       const numEl = el.querySelector('.num');
@@ -397,7 +406,7 @@ async function loadBalances(){
       }
     });
   }catch(e){
-    ['client','escrow','worker'].forEach(k=>{
+    ['client','escrow','worker','worker2'].forEach(k=>{
       document.getElementById(k+'Balance').querySelector('.num').textContent = '—';
     });
   }
