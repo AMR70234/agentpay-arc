@@ -101,6 +101,18 @@
     <div class="answer">Both the worker's answers and the independent verifier are given accurate, current background on Arc and Circle — sourced from official docs rather than generic training data, including specifics like Circle's June 2025 NYSE listing and Arc's planned summer 2026 mainnet launch. This closed a real bug: without this context, the verifier sometimes rejected correct historical facts as "possibly outdated" simply because it wasn't confident they were true.</div>
   </details>
 
+  <div class="section-title">Multi-worker and Nanopayments</div>
+
+  <details>
+    <summary>How does the client pick which worker to use?</summary>
+    <div class="answer">Two independent worker agents are available, each with its own wallet and wallet-linked reputation. Before creating a job, the client scores each worker on a combination of acceptance rate and price, then picks the winner — a real decision computed at runtime, not a fixed assignment.</div>
+  </details>
+
+  <details>
+    <summary>What are Nanopayments, and why are they separate from the escrow flow?</summary>
+    <div class="answer">Nanopayments (via Circle Gateway) handle sub-cent, gas-free payments for a single request — distinct from escrow, which is built for a complete task with verification and a dispute window. A dedicated wallet deposits USDC into Gateway, signs an EIP-3009 authorization, and pays a live protected endpoint. The full deposit-and-pay cycle runs server-side and can be triggered directly from the homepage.</div>
+  </details>
+
   <div class="section-title">Honest limitations</div>
 
   <details>
