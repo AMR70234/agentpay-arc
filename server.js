@@ -116,6 +116,24 @@ app.get('/priority-status', gateway.require('$0.001'), (req, res) => {
   });
 });
 
+// Live demo endpoint: runs the FULL Nanopayments buyer flow server-side
+// (deposit + sign + pay) using a dedicated raw wallet whose private key
+// stays in this server's environment — never sent to the browser.
+app.post('/nanopay-demo', async (req, res) => {
+  try {
+    const { GatewayClient } = require('@circle-fin/x402-batching/client');
+    const client = new GatewayClient({
+      chain: 'arcTestnet',
+      privateKey: process.env.NANOPAY_BUYER_PRIVATE_KEY,
+      rpcUrl: process.env.NANOPAY_RPC_URL,
+    });
+    const response = await client.pay(`http://localhost:${PORT}/priority-status`);
+    res.json({ ok: true, result: response.data });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });

@@ -327,6 +327,19 @@
       <div class="why-desc">Circle's SDK lets client, escrow, and worker each hold and control a wallet programmatically.</div>
     </div>
   </div>
+  <div class="why-heading">
+    <div class="why-eyebrow">Beyond Escrow</div>
+    <div class="why-h2">Live Nanopayments via Circle Gateway</div>
+  </div>
+  <div class="why-arc" style="grid-template-columns:1fr;">
+    <div class="why-card">
+      <div class="why-icon"><i class="ti ti-bolt"></i></div>
+      <div class="why-title">Sub-cent, gas-free payments</div>
+      <div class="why-desc" style="margin-bottom:14px;">A dedicated wallet deposits USDC into Circle's GatewayWallet contract, signs an EIP-3009 authorization, and pays a live endpoint protected by Circle's x402-batching middleware — no gas, no manual signing, fully automated server-side.</div>
+      <button onclick="runNanopayDemo()" id="nanopayBtn" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;">Run live payment</button>
+      <div id="nanopayOut" style="margin-top:12px;font-size:12px;color:var(--muted);display:none;"></div>
+    </div>
+  </div>
 
   <footer>
     Backend: Circle Developer-Controlled Wallets · Network: Arc Testnet · Model: gpt-4o-mini ·
@@ -596,6 +609,27 @@ async function runJob(){
   }finally{
     btn.disabled = false; btn.classList.remove('loading'); label.textContent = 'Run agent job';
   }
+}
+</script>
+<script>
+async function runNanopayDemo() {
+  const btn = document.getElementById('nanopayBtn');
+  const out = document.getElementById('nanopayOut');
+  btn.disabled = true;
+  btn.textContent = 'Processing payment...';
+  out.style.display = 'block';
+  out.textContent = 'Depositing USDC and signing payment authorization...';
+  try {
+    const res = await fetch('/nanopay-demo', { method: 'POST' });
+    const data = await res.json();
+    out.textContent = data.ok
+      ? '✅ Payment successful: ' + data.result.message
+      : '❌ ' + data.error;
+  } catch (e) {
+    out.textContent = '❌ Could not reach the server.';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Run live payment';
 }
 </script>
 </body>
