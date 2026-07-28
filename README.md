@@ -148,6 +148,14 @@ OPENAI_API_KEY=
 
 Built for the Programmable Money Hackathon (Arc × Encode Club), Agentic Economy track.
 
+## Independent infrastructure
+
+All wallets (client, escrow, worker 1, worker 2) and the deployed smart contract are fully independent of any other project — created from scratch, funded separately, with the contract owner explicitly set to the client wallet at deploy time to avoid a common pitfall where Circle's own deployer address ends up as the on-chain owner by default.
+
+## Reliability: keep-alive ping
+
+The server pings itself every 5 minutes to reduce cold-start delays on Render's free tier, keeping the live demo responsive for visitors instead of making them wait through a 30-60 second wake-up on the first request.
+
 ## Multi-worker competition
 
 Two independent worker agents, each with its own wallet and its own wallet-linked reputation record. Before creating a job, the client agent scores each worker on a combination of acceptance rate and price, and picks the winner — a real decision, not a fixed assignment. Every job records its outcome against the specific worker that handled it, so reputations diverge naturally as each worker builds its own track record. The smart contract itself required zero changes; it already accepts any worker address as a parameter.
