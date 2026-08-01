@@ -171,3 +171,19 @@ The full buyer-side payment flow is also live and verified: a dedicated raw wall
 ## Static analysis: Slither
 
 Ran Slither directly against `AgentPayEscrow.sol`. Result: no critical or high-severity findings. Flagged items were standard-severity notes — a reentrancy warning already mitigated by OpenZeppelin's `ReentrancyGuard`, and timestamp-based comparisons that are an accepted pattern for dispute windows measured in minutes, not something meaningfully exploitable at that granularity.
+
+## Sidebar redesign and personal Google-linked wallets
+
+The homepage and all seven pages were redesigned with a left-sidebar navigation and a distinct blue theme, separate from the teal palette used in the companion AgentGuard project.
+
+Visitors can optionally sign in with Google. On first sign-in, a dedicated Circle wallet is created automatically on Arc Testnet and permanently linked to that Google account — signing in again always returns the same wallet, balance, and history. Signed-in users see a first-time welcome modal, and their own wallet address/balance override the shared demo client card, with no visual flash of the wrong balance during the swap.
+
+Data isolation: the Transactions page and Reputation page filter to only the signed-in user's own jobs when logged in, with a dedicated "Your record, as a client" section on Reputation showing personal job stats.
+
+## Agent Stack-powered wallet funding, rate-limited per account
+
+A "Fund via Agent Stack" button lets signed-in users request test USDC directly from the Circle Agent Stack CLI wallet, capped at $10/day per Google account (tracked per-account, separate from the shared escrow spend). If the Agent Stack wallet itself runs low, the server automatically refills it from Circle's testnet faucet and retries the transfer once before surfacing an error — the same one-time auto-rescue pattern used for the escrow flow itself.
+
+## Dispute window: explicit button disable, not just visual hide
+
+The dispute button is now explicitly disabled the moment the countdown reaches zero, in addition to the countdown bar hiding — a defense-in-depth fix ensuring the button can never trigger a dispute after the window has genuinely closed, matching the on-chain contract's own deadline check.
