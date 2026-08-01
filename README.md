@@ -167,3 +167,7 @@ Explored Circle's Nanopayments (built on Circle Gateway, using the x402 protocol
 A real, funded Gateway balance now exists for this project on Arc. Went further: added a live, working Nanopayments-protected endpoint (`GET /priority-status`), using Circle's official `@circle-fin/x402-batching` Express middleware. Calling it without payment returns a genuine HTTP 402 with a full x402 payment payload — verified directly via curl, not simulated.
 
 The full buyer-side payment flow is also live and verified: a dedicated raw wallet (separate from Circle's Developer-Controlled Wallets, since GatewayClient requires a raw private key) deposited USDC into Gateway, signed an EIP-3009 authorization, and successfully paid for the protected endpoint — receiving a real `200 OK` with the priority-access response. Getting here required routing around Arc Testnet's public RPC rate limits (via a third-party Alchemy endpoint, as Arc's own docs recommend for high-throughput use) and explicitly setting `facilitatorUrl: 'https://gateway-api-testnet.circle.com'` and `networks: ['eip155:5042002']`, since the default facilitator only lists mainnet chains.
+
+## Static analysis: Slither
+
+Ran Slither directly against `AgentPayEscrow.sol`. Result: no critical or high-severity findings. Flagged items were standard-severity notes — a reentrancy warning already mitigated by OpenZeppelin's `ReentrancyGuard`, and timestamp-based comparisons that are an accepted pattern for dispute windows measured in minutes, not something meaningfully exploitable at that granularity.

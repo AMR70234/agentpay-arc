@@ -99,7 +99,7 @@
     <div class="limitations">
       <div class="limitation-item">
         <i class="ti ti-alert-triangle"></i>
-        <p><b>Unaudited contract.</b> AgentPayEscrow.sol is built on OpenZeppelin's audited primitives, but hasn't been reviewed as a whole by a professional security firm.</p>
+        <p><b>Unaudited contract.</b> AgentPayEscrow.sol is built on OpenZeppelin's audited primitives, but hasn't been reviewed as a whole by a professional security firm. Ran Slither (static analysis) on it directly: no critical or high-severity findings — flagged items were standard-severity notes already mitigated by OpenZeppelin's ReentrancyGuard, or accepted patterns like timestamp-based dispute windows.</p>
       </div>
       <div class="limitation-item">
         <i class="ti ti-alert-triangle"></i>
