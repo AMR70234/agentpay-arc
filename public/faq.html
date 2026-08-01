@@ -123,6 +123,23 @@
     <div class="answer">Nanopayments (via Circle Gateway) handle sub-cent, gas-free payments for a single request — distinct from escrow, which is built for a complete task with verification and a dispute window. A dedicated wallet deposits USDC into Gateway, signs an EIP-3009 authorization, and pays a live protected endpoint. The full deposit-and-pay cycle runs server-side and can be triggered directly from the homepage.</div>
   </details>
 
+  <div class="section-title">Personal wallets and Agent Stack funding</div>
+
+  <details>
+    <summary>What happens if I sign in with Google?</summary>
+    <div class="answer">A Circle wallet is created automatically and linked to your Google account, permanently, on Arc Testnet. Signing in again always returns the same wallet, balance, and transaction history, isolated from every other visitor.</div>
+  </details>
+
+  <details>
+    <summary>My wallet has 0 USDC after signing in — what do I do?</summary>
+    <div class="answer">New wallets start empty. Use the "Fund via Agent Stack" button on the homepage to request test USDC directly from Circle's Agent Stack CLI wallet, capped at $10/day per Google account.</div>
+  </details>
+
+  <details>
+    <summary>What is the Agent Stack wallet shown on the homepage?</summary>
+    <div class="answer">A real agent-controlled wallet created via <code>circle wallet create --blockchain ARC-TESTNET</code> from Circle's official Agent Stack CLI. It can send USDC to the escrow client wallet directly, and also acts as an automatic one-time rescue source if the client wallet's USDC approval ever fails.</div>
+  </details>
+
   <div class="section-title">Honest limitations</div>
 
   <details>
