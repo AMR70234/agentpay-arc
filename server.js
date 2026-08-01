@@ -11,6 +11,57 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+// Google OAuth: each logged-in user gets their own Circle wallet,
+// created automatically on first login and reused on future logins.
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const { getOrCreateUserWallet, hasSeenWelcome, markWelcomeSeen } = require('./userWallets');
+
+app.use(session({
+  secret: process.env.GOOGLE_CLIENT_SECRET || 'dev-secret',
+  resave: false,
+  saveUninitialized: false,
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.GOOGLE_CALLBACK_URL,
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    const wallet = await getOrCreateUserWallet(profile.id, profile.emails[0].value);
+    done(null, { googleId: profile.id, email: profile.emails[0].value, wallet });
+  } catch (err) {
+    done(err);
+  }
+}));
+
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
+  res.redirect('/');
+});
+app.get('/auth/logout', (req, res) => {
+  req.logout(() => res.redirect('/'));
+});
+app.get('/auth/me', (req, res) => {
+  res.json(req.user || null);
+});
+app.get('/auth/welcome-status', (req, res) => {
+  if (!req.user) return res.json({ shouldShowWelcome: false });
+  res.json({ shouldShowWelcome: !hasSeenWelcome(req.user.googleId) });
+});
+app.post('/auth/welcome-seen', (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not signed in' });
+  markWelcomeSeen(req.user.googleId);
+  res.json({ ok: true });
+});
+
 app.post('/run-job', async (req, res) => {
   const { taskInput, amount, priority } = req.body;
 
@@ -35,7 +86,8 @@ app.post('/run-job', async (req, res) => {
       recordTransaction(nanoJobId, 'released', '0.001', 'Priority fee for job execution', { message: 'Nanopayment for priority job' }, null);
     }
 
-    const result = await runEscrowJob(taskInput, amount, !!priority);
+    const clientWallet = req.user ? req.user.wallet : null;
+    const result = await runEscrowJob(taskInput, amount, !!priority, clientWallet);
 
     return res.json({
       accepted: result.accepted,
@@ -71,6 +123,17 @@ app.post('/dispute', async (req, res) => {
 app.get('/job-status/:jobId', (req, res) => {
   const result = getJobStatus(req.params.jobId);
   res.json(result);
+});
+
+app.get('/user-balance', async (req, res) => {
+  if (!req.user) return res.json({ loggedIn: false });
+  try {
+    const balRes = await client.getWalletTokenBalance({ id: req.user.wallet.walletId });
+    const token = balRes.data.tokenBalances.find(t => !t.token.isNative);
+    res.json({ loggedIn: true, walletAddress: req.user.wallet.walletAddress, balance: token ? token.amount : '0' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/balances', async (req, res) => {
@@ -201,6 +264,27 @@ app.post('/agent-stack-payment', (req, res) => {
     res.json({ ok: true, amount: AMOUNT, to: DEST_ADDRESS, transaction: data });
   } catch (error) {
     res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+// Funds a logged-in user's wallet using the Circle Agent Stack CLI
+// wallet as the source — a real onchain USDC transfer on Arc Testnet.
+app.post('/fund-my-wallet', (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not signed in' });
+
+  const { execSync } = require('child_process');
+  const AGENT_STACK_ADDRESS = '0x8888106721ab9691c001193c141d538278ca5585';
+  const FUND_AMOUNT = 5;
+
+  try {
+    const output = execSync(
+      `circle wallet transfer ${req.user.wallet.walletAddress} --amount ${FUND_AMOUNT} --token ${process.env.USDC_TOKEN_ADDRESS} --address ${AGENT_STACK_ADDRESS} --chain ARC-TESTNET --output json`,
+      { encoding: 'utf-8', timeout: 30000 }
+    );
+    const data = JSON.parse(output);
+    res.json({ ok: true, amount: FUND_AMOUNT, transaction: data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

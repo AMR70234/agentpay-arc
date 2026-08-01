@@ -51,10 +51,10 @@ function chooseWorker() {
   return scored[0];
 }
 
-async function approveUSDC(amount) {
+async function approveUSDC(amount, walletId) {
   const amountUnits = toUnits(amount);
   const approveRes = await callContract({
-    walletId: process.env.WALLET_ID,
+    walletId: walletId || process.env.WALLET_ID,
     contractAddress: process.env.USDC_TOKEN_ADDRESS,
     abiFunctionSignature: 'approve(address,uint256)',
     abiParameters: [process.env.ESCROW_CONTRACT_ADDRESS, amountUnits],
@@ -66,7 +66,9 @@ async function approveUSDC(amount) {
 const DISPUTE_WINDOW_MS = 8000;
 const pendingJobs = new Map();
 
-async function runEscrowJob(taskInput, amount, priority) {
+async function runEscrowJob(taskInput, amount, priority, clientWallet) {
+  const clientWalletId = (clientWallet && clientWallet.walletId) || process.env.WALLET_ID;
+  const clientWalletAddress = (clientWallet && clientWallet.walletAddress) || process.env.WALLET_ADDRESS;
   const worker = chooseWorker();
   if (!worker) {
     return { accepted: false, disputable: false, summary: 'No workers available.', taskType: 'error', amount: '0', finalTx: null, stats: null };
@@ -74,7 +76,7 @@ async function runEscrowJob(taskInput, amount, priority) {
 
   if (!amount) amount = (parseFloat(calculatePrice(taskInput)) * worker.priceMultiplier).toFixed(2);
 
-  let approved = await approveUSDC(amount);
+  let approved = await approveUSDC(amount, clientWalletId);
   let rescued = false;
 
   // Fallback: if approval failed, attempt a one-time rescue transfer
@@ -89,7 +91,7 @@ async function runEscrowJob(taskInput, amount, priority) {
         { encoding: 'utf-8', timeout: 30000 }
       );
       console.log('\u2705 Rescue transfer complete \u2014 retrying approval once...');
-      approved = await approveUSDC(amount);
+      approved = await approveUSDC(amount, clientWalletId);
       if (approved) rescued = true;
     } catch (rescueError) {
       console.log('\u274c Rescue attempt failed:', rescueError.message);
@@ -104,7 +106,7 @@ async function runEscrowJob(taskInput, amount, priority) {
   console.log(`On-chain: creating job ${jobId}, escrowing ${amount} USDC with worker ${worker.walletAddress}...`);
 
   const createRes = await callContract({
-    walletId: process.env.WALLET_ID,
+    walletId: clientWalletId,
     abiFunctionSignature: 'createJob(bytes32,address,uint256)',
     abiParameters: [jobId, worker.walletAddress, toUnits(amount)],
   });
@@ -159,7 +161,7 @@ async function runEscrowJob(taskInput, amount, priority) {
   } else {
     console.log('Task rejected — disputing on-chain (client wallet)...');
     const disputeRes = await callContract({
-      walletId: process.env.WALLET_ID,
+      walletId: clientWalletId,
       abiFunctionSignature: 'dispute(bytes32)',
       abiParameters: [jobId],
     });
