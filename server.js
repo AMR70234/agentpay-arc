@@ -12,15 +12,30 @@ app.use(express.json());
 app.use(express.static('public'));
 
 app.post('/run-job', async (req, res) => {
-  const { taskInput, amount } = req.body;
+  const { taskInput, amount, priority } = req.body;
 
   if (!taskInput) {
     return res.status(400).json({ error: 'Missing taskInput in request body' });
   }
 
   try {
-    console.log('🚀 Job started...');
-    const result = await runEscrowJob(taskInput, amount);
+    console.log('🚀 Job started...' + (priority ? ' (priority via Nanopayment)' : ''));
+
+    if (priority) {
+      const { GatewayClient } = require('@circle-fin/x402-batching/client');
+      const client = new GatewayClient({
+        chain: 'arcTestnet',
+        privateKey: process.env.NANOPAY_BUYER_PRIVATE_KEY,
+        rpcUrl: process.env.NANOPAY_RPC_URL,
+      });
+      await client.pay(`http://localhost:${PORT}/priority-status`);
+      console.log('💰 Priority Nanopayment confirmed');
+      const { recordTransaction } = require('./db');
+      const nanoJobId = '0xnano' + Date.now();
+      recordTransaction(nanoJobId, 'released', '0.001', 'Priority fee for job execution', { message: 'Nanopayment for priority job' }, null);
+    }
+
+    const result = await runEscrowJob(taskInput, amount, !!priority);
 
     return res.json({
       accepted: result.accepted,

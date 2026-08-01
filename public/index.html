@@ -277,6 +277,10 @@
     </div>
 
     <div class="actions">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;">
+        <input type="checkbox" id="priorityCheck" style="cursor:pointer;" />
+        Pay $0.001 for priority (1s dispute window instead of 8s, via a real Nanopayment)
+      </label>
       <button class="primary" id="runBtn" onclick="runJob()">
         <span class="spinner"></span><span id="runBtnLabel">Run agent job</span>
       </button>
@@ -569,10 +573,12 @@ async function runJob(){
 
   const entry = { time: timestamp(), summary:'', accepted:false, amount:null, type:null };
 
+  const priority = document.getElementById('priorityCheck').checked;
+  if (priority) addLine('$', 'Paying $0.001 priority fee via Nanopayments...', true);
   try{
     const res = await fetch(`${API_BASE}/run-job`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ taskInput: input })
+      body: JSON.stringify({ taskInput: input, priority })
     });
     const data = await res.json();
 

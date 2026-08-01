@@ -1,5 +1,91 @@
 [
   {
+    "jobId": "0x7194bd08791c7577928d02be9d4a4c1e52b4c80644a409be6a7e04db71315226",
+    "status": "released",
+    "amount": "0.90",
+    "taskInput": "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is a Layer-1 blockchain by Circle for stablecoin finance, using USDC and enabling rapid transactions and developer tools.",
+      "taskType": "summarize"
+    },
+    "txHash": "0xf9ec90c7154004ec7742581ef39c9b6827db015b8e642c92d51969c5de6dc408",
+    "createdAt": "2026-08-01T05:51:12.551Z"
+  },
+  {
+    "jobId": "0x1b4e54624940b600709baf4492e0ced0fef030828f9ce4956840f6e0543afcec",
+    "status": "released",
+    "amount": "0.45",
+    "taskInput": "Arc",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is Circle's Layer-1 blockchain designed for stablecoin-native finance, utilizing USDC as its gas token and offering features like deterministic settlement finality and EVM compatibility. Its public testnet launched in October 2025, with mainnet expected in summer 2026.",
+      "taskType": "qa"
+    },
+    "txHash": null,
+    "createdAt": "2026-08-01T05:47:43.721Z"
+  },
+  {
+    "jobId": "0xnano1785563247805",
+    "status": "released",
+    "amount": "0.001",
+    "taskInput": "Priority fee for job execution",
+    "taskResult": {
+      "message": "Nanopayment for priority job"
+    },
+    "txHash": null,
+    "createdAt": "2026-08-01T05:47:27.806Z"
+  },
+  {
+    "jobId": "0xbfab25f5efcd8fa5bc34db5ec8210086a254939c051dd6e56118cfbaa2a92acd",
+    "status": "released",
+    "amount": "0.90",
+    "taskInput": "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is a Layer-1 blockchain by Circle for stablecoin finance, using USDC and enabling rapid transactions and developer tools.",
+      "taskType": "summarize"
+    },
+    "txHash": null,
+    "createdAt": "2026-08-01T05:46:24.989Z"
+  },
+  {
+    "jobId": "0xnano1785563169518",
+    "status": "released",
+    "amount": "0.001",
+    "taskInput": "Priority fee for job execution",
+    "taskResult": {
+      "message": "Nanopayment for priority job"
+    },
+    "txHash": null,
+    "createdAt": "2026-08-01T05:46:09.519Z"
+  },
+  {
+    "jobId": "0x0f911514dec0eab9e7e2d9b81a3c792a5f0eb73c1db5e7f035f688ddf128e6da",
+    "status": "released",
+    "amount": "0.90",
+    "taskInput": "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is a Layer-1 blockchain by Circle for stablecoin finance, using USDC and enabling rapid transactions and developer tools.",
+      "taskType": "summarize"
+    },
+    "txHash": null,
+    "createdAt": "2026-08-01T05:42:34.092Z"
+  },
+  {
+    "jobId": "0xnano1785562245372",
+    "status": "released",
+    "amount": "0.001",
+    "taskInput": "Nanopayments priority access",
+    "taskResult": {
+      "priority": true,
+      "message": "Payment verified via Circle Gateway Nanopayments — priority access granted."
+    },
+    "txHash": null,
+    "createdAt": "2026-08-01T05:30:45.373Z"
+  },
+  {
     "jobId": "0xnano1785214664471",
     "status": "released",
     "amount": "0.001",

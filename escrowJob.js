@@ -66,7 +66,7 @@ async function approveUSDC(amount) {
 const DISPUTE_WINDOW_MS = 8000;
 const pendingJobs = new Map();
 
-async function runEscrowJob(taskInput, amount) {
+async function runEscrowJob(taskInput, amount, priority) {
   const worker = chooseWorker();
   if (!worker) {
     return { accepted: false, disputable: false, summary: 'No workers available.', taskType: 'error', amount: '0', finalTx: null, stats: null };
@@ -100,6 +100,7 @@ async function runEscrowJob(taskInput, amount) {
   if (taskResult.accepted) {
     pendingJobs.set(jobId, { status: 'pending', amount, taskResult, taskInput, worker });
 
+    const activeDisputeWindow = priority ? 1000 : DISPUTE_WINDOW_MS;
     const timer = setTimeout(async () => {
       const job = pendingJobs.get(jobId);
       if (!job || job.status !== 'pending') return;
@@ -118,7 +119,7 @@ async function runEscrowJob(taskInput, amount) {
       } catch (err) {
         console.error(`Auto-release failed for job ${jobId}:`, err.message);
       }
-    }, DISPUTE_WINDOW_MS);
+    }, activeDisputeWindow);
     pendingJobs.get(jobId).timer = timer;
 
     return {
@@ -130,7 +131,7 @@ async function runEscrowJob(taskInput, amount) {
       amount,
       worker: worker.walletAddress,
       escrowTx: { id: createRes.data.id, state: createTx.state, txHash: createTx.txHash },
-      disputeWindowMs: DISPUTE_WINDOW_MS,
+      disputeWindowMs: activeDisputeWindow,
       stats: undefined,
     };
   } else {
