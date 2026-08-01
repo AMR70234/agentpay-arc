@@ -592,6 +592,7 @@ async function runJob(){
     entry.summary = data.summary || '(no result)';
     entry.type = data.taskType;
     entry.amount = data.amount;
+    if (data.rescued) addLine('🤖', 'Balance was low — Agent Stack wallet automatically rescued the job with a fallback transfer', true);
     addLine('✓', `Result: <b>"${data.summary}"</b>`);
     addLine('$', `Escrowed fee: <b>${data.amount} USDC</b> (auto-priced by task length)`, true);
     if (data.disputable && data.jobId) {

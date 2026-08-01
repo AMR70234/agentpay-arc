@@ -40,6 +40,7 @@ app.post('/run-job', async (req, res) => {
     return res.json({
       accepted: result.accepted,
       disputable: result.disputable,
+      rescued: result.rescued,
       jobId: result.jobId,
       disputeWindowMs: result.disputeWindowMs,
       summary: result.summary,

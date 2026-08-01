@@ -1,5 +1,70 @@
 [
   {
+    "jobId": "0xbb84888c66ae6c7ec64ebf8f81b3d57381f728dd1448e439c9ab94755585b281",
+    "status": "released",
+    "amount": "1.00",
+    "taskInput": "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is a Layer-1 blockchain by Circle for stablecoin finance, using USDC and enabling rapid transactions and developer tools.",
+      "taskType": "summarize"
+    },
+    "txHash": "0x566482a26e4863117eadc28dad599af8567c606c33e17077463f43cff39d7737",
+    "createdAt": "2026-08-01T06:09:12.846Z"
+  },
+  {
+    "jobId": "0xc5dbed8ead38060f6645f83a98822bbdfaafdad7aaf44570531090b727428b1f",
+    "status": "released",
+    "amount": "1.00",
+    "taskInput": "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is a Layer-1 blockchain by Circle for stablecoin finance, using USDC and enabling rapid transactions and developer tools.",
+      "taskType": "summarize"
+    },
+    "txHash": "0xe75a49bdcc087468aa67399bb38ab906618ac82ec956a362829c8590d80c286e",
+    "createdAt": "2026-08-01T06:08:43.789Z"
+  },
+  {
+    "jobId": "0xb1e0a7ddfe14e83e0efa62c132dd3bfc7ddaeff885ba9599485c0e972dafea9d",
+    "status": "released",
+    "amount": "0.50",
+    "taskInput": "من حاكم سوريا \n الان",
+    "taskResult": {
+      "accepted": true,
+      "result": "حاكم سوريا الحالي هو بشار الأسد، لكن يجب ملاحظة أن المعلومات قد تكون قديمة أو تغيرت منذ ذلك الحين.",
+      "taskType": "qa"
+    },
+    "txHash": "0xb3148e45153141709f0b5ffbc8e8670bae3d8e377b44e1df3b44b4eb6d55b0b1",
+    "createdAt": "2026-08-01T06:06:49.640Z"
+  },
+  {
+    "jobId": "0x14d2dbd761fc57fa6244776016e311344c8cbad66b6cf8e1e1153cb3fcf3b18b",
+    "status": "released",
+    "amount": "0.50",
+    "taskInput": "من حاكم مصر الان",
+    "taskResult": {
+      "accepted": true,
+      "result": "معلوماتي قديمة حتى أكتوبر 2023، لكن في ذلك الوقت كان الرئيس عبد الفتاح السيسي هو حاكم مصر.",
+      "taskType": "qa"
+    },
+    "txHash": "0x88383748529aed2ccd4a902a64b8e365e0754201d4cfa0448dd3a1a81ba8a043",
+    "createdAt": "2026-08-01T06:06:02.016Z"
+  },
+  {
+    "jobId": "0xa50ba50443a95542b27c7de1dfee0b8b6291de153c768bfdb41e18f5f2d26032",
+    "status": "refunded",
+    "amount": "0.90",
+    "taskInput": "Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.",
+    "taskResult": {
+      "accepted": true,
+      "result": "Arc is a Layer-1 blockchain by Circle for stablecoin finance, using USDC and enabling rapid transactions and developer tools.",
+      "taskType": "summarize"
+    },
+    "txHash": "0xebfcf6be92634e416987af8fe264fe5a783008b52ebeb14e1449d5010bad0bc8",
+    "createdAt": "2026-08-01T06:05:26.375Z"
+  },
+  {
     "jobId": "0x7194bd08791c7577928d02be9d4a4c1e52b4c80644a409be6a7e04db71315226",
     "status": "released",
     "amount": "0.90",

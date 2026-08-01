@@ -1,12 +1,12 @@
 {
   "0xfc8c28a3899f3bf9f2ed13df1d855cc87f5713ec": {
-    "totalJobs": 0,
-    "accepted": 0,
+    "totalJobs": 4,
+    "accepted": 4,
     "rejected": 0
   },
   "0x1d27564cc8751eea468ab260f995990a5a9133fd": {
-    "totalJobs": 5,
+    "totalJobs": 6,
     "accepted": 5,
-    "rejected": 0
+    "rejected": 1
   }
 }
