@@ -84,12 +84,18 @@ const CIRCLE_CONTEXT = `Background knowledge about Circle (use this if the quest
 Circle Internet Group is the company behind USDC, the second-largest stablecoin by market cap, fully backed 1:1 by cash and short-term US Treasuries, redeemable at par. Circle also operates Circle Mint (issuance/redemption), Circle Payments Network (CPN, for institutional cross-border settlement), CCTP (Cross-Chain Transfer Protocol, for native USDC transfers across chains without wrapped tokens), Circle Gateway, and the App Kit SDK (Send/Bridge/Swap). Circle went public on the NYSE in June 2025. Circle also builds Arc, its own Layer-1 blockchain (see above).
 `;
 
+const GETTING_STARTED_CONTEXT = `Practical steps for building on Arc (use this if the question asks HOW to do something, not just what Arc is):
+To deploy a contract on Arc Testnet: (1) Create a Circle Developer-Controlled Wallet so your backend can programmatically sign transactions, (2) Fund it with testnet USDC via Circle's faucet — Arc Testnet uses USDC as gas, so you need a balance before any transaction, (3) Deploy your Solidity contract (or use a Circle Contracts template for common patterns like ERC-20), (4) Verify the deployment and transaction status via the transaction ID.
+To connect to Arc: use the RPC endpoint and chain ID from docs.arc.io's network configuration page, or a provider like QuickNode which supports Arc directly.
+Reference docs to point users to: docs.arc.io (main developer docs, includes quickstarts, tutorials, and an /llms.txt index of all pages), developers.circle.com (Circle's own API/SDK docs for Wallets, Contracts, Gateway, CCTP), and community.arc.io (community guides and quickstart spotlights).
+`;
+
 async function doQA(inputText) {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     temperature: 0,
     messages: [
-      { role: 'system', content: `Answer the question directly and concisely, in the SAME language as the question, in one or two sentences. If you genuinely cannot answer, say so clearly and briefly. If the question is about something that changes over time (current officeholders, prices, rankings, recent events), you MUST include a brief caveat that your information may be outdated.\n\n${ARC_CONTEXT}\n${CIRCLE_CONTEXT}` },
+      { role: 'system', content: `Answer the question directly and concisely, in the SAME language as the question, in one or two sentences. If you genuinely cannot answer, say so clearly and briefly. If the question is about something that changes over time (current officeholders, prices, rankings, recent events), you MUST include a brief caveat that your information may be outdated.\n\n${ARC_CONTEXT}\n${CIRCLE_CONTEXT}\n${GETTING_STARTED_CONTEXT}` },
       { role: 'user', content: inputText },
     ],
   });

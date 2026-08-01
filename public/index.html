@@ -42,6 +42,7 @@
 
   .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:36px;flex-wrap:wrap;gap:12px;}
   .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;}
+  .brand img{width:44px;height:44px;border-radius:10px;}
   .brand img{width:44px;height:44px;border-radius:8px;object-fit:contain;}
   .network{display:flex;align-items:center;gap:16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
   .network .item{display:flex;align-items:center;gap:6px;}
@@ -631,6 +632,7 @@ async function runJob(){
 
   const priority = document.getElementById('priorityCheck').checked;
   if (priority) addLine('$', 'Paying $0.001 priority fee via Nanopayments...', true);
+  addLine('\u23f3', 'Approving USDC spend with the escrow contract...', true);
   try{
     const res = await fetch(`${API_BASE}/run-job`, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -639,8 +641,9 @@ async function runJob(){
     const data = await res.json();
 
     if(!res.ok){
-      addLine('✕', `Backend error: ${data.error||'unknown'}`);
-      setStatus('error','rejected'); toast(data.error||'Backend error');
+      const friendlyError = (data.error||'').includes('insufficient') ? 'Your wallet balance is too low for this task. Try funding it first.' : (data.error || 'Something went wrong on the server.');
+      addLine('✕', `Error: ${friendlyError}`);
+      setStatus('error','rejected'); toast(friendlyError);
       entry.summary = '(error)'; history.push(entry); renderHistory();
       return;
     }
