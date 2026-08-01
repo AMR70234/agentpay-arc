@@ -341,6 +341,21 @@
     </div>
   </div>
 
+
+  <div class="why-heading">
+    <div class="why-eyebrow">Circle Agent Stack</div>
+    <div class="why-h2">A real agent wallet, provisioned via Circle CLI</div>
+  </div>
+  <div class="why-arc" style="grid-template-columns:1fr;">
+    <div class="why-card">
+      <div class="why-icon"><i class="ti ti-robot"></i></div>
+      <div class="why-title">Wallet + USDC + onchain actions on Arc</div>
+      <div class="why-desc" style="margin-bottom:14px;">Created via circle wallet create --blockchain ARC-TESTNET from Circle's official Agent Stack CLI — a real agent-controlled wallet, funded with real testnet USDC. Verify its live balance, or trigger a real 1 USDC onchain payment to AgentPay's client wallet — both run below.</div>
+      <button onclick="checkAgentStackWallet()" id="agentStackBtn" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;margin-right:8px;">Verify Agent Stack wallet</button>
+      <button onclick="sendAgentStackPayment()" id="agentStackPayBtn" style="background:transparent;border:1px solid var(--blue);color:var(--blue);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;">Send USDC payment</button>
+      <div id="agentStackOut" style="margin-top:12px;font-size:12px;color:var(--muted);display:none;font-family:monospace;"></div>
+    </div>
+  </div>
   <footer>
     Backend: Circle Developer-Controlled Wallets · Network: Arc Testnet · Model: gpt-4o-mini ·
     <a href="https://testnet.arcscan.app" target="_blank" rel="noopener">Arc Explorer</a>
@@ -630,6 +645,62 @@ async function runNanopayDemo() {
   }
   btn.disabled = false;
   btn.textContent = 'Run live payment';
+}
+</script>
+<script>
+async function checkAgentStackWallet() {
+  const btn = document.getElementById('agentStackBtn');
+  const out = document.getElementById('agentStackOut');
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+  out.style.display = 'block';
+  out.textContent = 'Querying Circle Agent Stack CLI for live balance...';
+  try {
+    const res = await fetch('/agent-stack-wallet');
+    const data = await res.json();
+    if (data.ok) {
+      out.textContent = `\u2705 Agent wallet ${data.address}\nBlockchain: ${data.blockchain}\nUSDC balance: ${data.balance}`;
+    } else {
+      out.textContent = `\u274c ${data.error}`;
+    }
+  } catch (e) {
+    out.textContent = '\u274c Could not reach the server.';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Verify Agent Stack wallet';
+}
+
+async function sendAgentStackPayment() {
+  if (!confirm('Send a real 1 USDC onchain payment from the Agent Stack wallet to AgentPay\'s client wallet on Arc Testnet?')) return;
+
+  const btn = document.getElementById('agentStackPayBtn');
+  const out = document.getElementById('agentStackOut');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  out.style.display = 'block';
+  out.textContent = 'Executing real USDC transfer via Circle CLI...';
+  try {
+    const res = await fetch('/agent-stack-payment', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      const txHash = data.transaction.data.txHash;
+      out.innerHTML = `\u2705 Sent ${data.amount} USDC to ${data.to}<br>Tx: ${txHash}<br><a href="https://testnet.arcscan.app/tx/${txHash}" target="_blank" rel="noopener" style="color:var(--blue);">View on Arc Explorer \u2197</a><br><span id="balanceRefreshNote" style="color:var(--muted);"></span>`;
+      setTimeout(async () => {
+        try {
+          const balRes = await fetch('/agent-stack-wallet');
+          const balData = await balRes.json();
+          const note = document.getElementById('balanceRefreshNote');
+          if (note) note.textContent = `Updated balance: ${balData.balance} USDC`;
+        } catch (e) {}
+      }, 3000);
+    } else {
+      out.textContent = `\u274c ${data.error}`;
+    }
+  } catch (e) {
+    out.textContent = '\u274c Could not reach the server.';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Send USDC payment';
 }
 </script>
 </body>

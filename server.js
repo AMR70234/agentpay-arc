@@ -137,6 +137,57 @@ app.post('/nanopay-demo', async (req, res) => {
   }
 });
 
+// Circle Agent Stack integration: verifies a real agent wallet created
+// via `circle wallet create`, holding real USDC on Arc Testnet, funded
+// through the CLI's own faucet command.
+app.get('/agent-stack-wallet', (req, res) => {
+  const { execSync } = require('child_process');
+  const AGENT_STACK_ADDRESS = '0x8888106721ab9691c001193c141d538278ca5585';
+  try {
+    const output = execSync(
+      `circle wallet balance --chain ARC-TESTNET --address ${AGENT_STACK_ADDRESS}`,
+      { encoding: 'utf-8', timeout: 15000 }
+    );
+    const lines = output.split('\n').filter(l => l.includes('false'));
+    let balance = null;
+    if (lines.length > 0) {
+      const parts = lines[0].split('\u2502').map(p => p.trim()).filter(Boolean);
+      balance = parts[2] || null;
+    }
+    res.json({
+      ok: true,
+      address: AGENT_STACK_ADDRESS,
+      blockchain: 'ARC-TESTNET',
+      balance: balance,
+      raw: output,
+    });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+// Executes a real USDC payment from the Agent Stack wallet to the
+// AgentPay client wallet, via Circle CLI directly — a live "onchain
+// action" fulfilling Agent Stack's USDC payment requirement.
+app.post('/agent-stack-payment', (req, res) => {
+  const { execSync } = require('child_process');
+  const AGENT_STACK_ADDRESS = '0x8888106721ab9691c001193c141d538278ca5585';
+  const DEST_ADDRESS = process.env.WALLET_ADDRESS;
+  const USDC_TOKEN = process.env.USDC_TOKEN_ADDRESS || '0x3600000000000000000000000000000000000000';
+  const AMOUNT = '1';
+
+  try {
+    const output = execSync(
+      `circle wallet transfer ${DEST_ADDRESS} --amount ${AMOUNT} --token ${USDC_TOKEN} --address ${AGENT_STACK_ADDRESS} --chain ARC-TESTNET --output json`,
+      { encoding: 'utf-8', timeout: 30000 }
+    );
+    const data = JSON.parse(output);
+    res.json({ ok: true, amount: AMOUNT, to: DEST_ADDRESS, transaction: data });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
