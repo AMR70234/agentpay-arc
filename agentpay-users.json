@@ -4,6 +4,9 @@
     "walletId": "035b502b-e374-56d7-8104-65580fd51246",
     "walletAddress": "0xd2184d51853910e12014bdd1751b91c8b635e2f0",
     "createdAt": "2026-08-01T06:44:18.901Z",
-    "hasSeenWelcome": false
+    "hasSeenWelcome": true,
+    "fundingHistory": {
+      "2026-08-01": 10
+    }
   }
 }

@@ -59,3 +59,32 @@ function markWelcomeSeen(googleId) {
 }
 
 module.exports = { getOrCreateUserWallet, hasSeenWelcome, markWelcomeSeen };
+
+const DAILY_FUNDING_LIMIT = 10; // USD per Google account per day
+
+function canFund(googleId, requestedAmount) {
+  const users = loadUsers();
+  const user = users[googleId];
+  if (!user) return { allowed: false, remaining: 0 };
+
+  const today = new Date().toISOString().slice(0, 10);
+  const fundedToday = (user.fundingHistory && user.fundingHistory[today]) || 0;
+  const remaining = DAILY_FUNDING_LIMIT - fundedToday;
+
+  return { allowed: requestedAmount <= remaining, remaining, fundedToday };
+}
+
+function recordFunding(googleId, amount) {
+  const users = loadUsers();
+  const user = users[googleId];
+  if (!user) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+  if (!user.fundingHistory) user.fundingHistory = {};
+  user.fundingHistory[today] = (user.fundingHistory[today] || 0) + amount;
+  saveUsers(users);
+}
+
+module.exports.canFund = canFund;
+module.exports.recordFunding = recordFunding;
+module.exports.DAILY_FUNDING_LIMIT = DAILY_FUNDING_LIMIT;

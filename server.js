@@ -274,17 +274,36 @@ app.post('/fund-my-wallet', (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'Not signed in' });
 
   const { execSync } = require('child_process');
-  const AGENT_STACK_ADDRESS = '0x8888106721ab9691c001193c141d538278ca5585';
   const FUND_AMOUNT = 5;
+  const AGENT_STACK_ADDRESS = '0x8888106721ab9691c001193c141d538278ca5585';
 
+  const { canFund, recordFunding, DAILY_FUNDING_LIMIT } = require('./userWallets');
+  const check = canFund(req.user.googleId, FUND_AMOUNT);
+  if (!check.allowed) {
+    return res.status(429).json({
+      error: `Daily funding limit reached ($${DAILY_FUNDING_LIMIT}/day per account). Already used $${check.fundedToday} today.`,
+    });
+  }
+  const transferCmd = `circle wallet transfer ${req.user.wallet.walletAddress} --amount ${FUND_AMOUNT} --token ${process.env.USDC_TOKEN_ADDRESS} --address ${AGENT_STACK_ADDRESS} --chain ARC-TESTNET --output json`;
   try {
-    const output = execSync(
-      `circle wallet transfer ${req.user.wallet.walletAddress} --amount ${FUND_AMOUNT} --token ${process.env.USDC_TOKEN_ADDRESS} --address ${AGENT_STACK_ADDRESS} --chain ARC-TESTNET --output json`,
-      { encoding: 'utf-8', timeout: 30000 }
-    );
+    const output = execSync(transferCmd, { encoding: 'utf-8', timeout: 30000 });
     const data = JSON.parse(output);
+    recordFunding(req.user.googleId, FUND_AMOUNT);
     res.json({ ok: true, amount: FUND_AMOUNT, transaction: data });
   } catch (error) {
+    // If the Agent Stack wallet itself ran low, auto-refill it from the
+    // faucet once, then retry the transfer exactly one time.
+    if (error.message.includes('insufficient')) {
+      try {
+        execSync(`circle wallet fund --chain ARC-TESTNET --address ${AGENT_STACK_ADDRESS}`, { encoding: 'utf-8', timeout: 15000 });
+        const retryOutput = execSync(transferCmd, { encoding: 'utf-8', timeout: 30000 });
+        const retryData = JSON.parse(retryOutput);
+        recordFunding(req.user.googleId, FUND_AMOUNT);
+        return res.json({ ok: true, amount: FUND_AMOUNT, transaction: retryData, autoRefilled: true });
+      } catch (retryError) {
+        return res.status(500).json({ error: 'Agent Stack wallet is low on funds and the faucet refill is still processing. Please try again in a minute.' });
+      }
+    }
     res.status(500).json({ error: error.message });
   }
 });

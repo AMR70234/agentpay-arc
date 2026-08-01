@@ -757,7 +757,7 @@ async function loadAuthStatus() {
     const res = await fetch('/auth/me');
     const user = await res.json();
     if (user) {
-      box.innerHTML = `Signed in as <b>${user.email}</b> (wallet: <span style="cursor:pointer;text-decoration:underline dotted;" onclick="navigator.clipboard.writeText('${user.wallet.walletAddress}')" title="Click to copy">${user.wallet.walletAddress}</span>) — <a href="/auth/logout" style="color:var(--blue);">Sign out</a> — <button onclick="fundMyWallet()" id="fundBtn" style="background:transparent;border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">+ Fund via Agent Stack</button><span id="fundStatus" style="margin-left:8px;color:var(--muted);"></span>`;
+      box.innerHTML = `Signed in as <b>${user.email}</b> (wallet: <span style="cursor:pointer;text-decoration:underline dotted;" onclick="navigator.clipboard.writeText('${user.wallet.walletAddress}')" title="Click to copy">${user.wallet.walletAddress}</span>) — <a href="/auth/logout" style="color:var(--blue);">Sign out</a> — <button onclick="fundMyWallet()" id="fundBtn" style="background:transparent;border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">+ Fund via Agent Stack</button>`;
     } else {
       box.innerHTML = `
         <a href="/auth/google" style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:#3c4043;text-decoration:none;padding:8px 16px;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border:1px solid #dadce0;">
@@ -770,24 +770,54 @@ async function loadAuthStatus() {
   }
 }
 loadAuthStatus();
+checkWelcomeModal();
+
+async function checkWelcomeModal() {
+  try {
+    const res = await fetch('/auth/welcome-status');
+    const data = await res.json();
+    if (data.shouldShowWelcome) showWelcomeModal();
+  } catch (e) {}
+}
+
+function showWelcomeModal() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,14,22,.85);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = `
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:380px;text-align:center;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(55,138,221,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+        <i class="ti ti-wallet" style="font-size:24px;color:var(--blue);"></i>
+      </div>
+      <h2 style="font-size:18px;font-weight:500;margin:0 0 10px;">Welcome to AgentPay</h2>
+      <p style="color:var(--muted);font-size:13px;line-height:1.6;margin:0 0 20px;">Your own Circle wallet was just created on Arc Testnet, tracked separately from every other visitor. It starts empty, so use the <b>"Fund via Agent Stack"</b> button on the homepage to get test USDC before running your first job.</p>
+      <button onclick="dismissWelcomeModal()" style="background:var(--blue);color:#042C53;border:none;padding:10px 20px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;">Got it</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  window._welcomeOverlay = overlay;
+}
+
+async function dismissWelcomeModal() {
+  if (window._welcomeOverlay) window._welcomeOverlay.remove();
+  try { await fetch('/auth/welcome-seen', { method: 'POST' }); } catch (e) {}
+}
 
 async function fundMyWallet() {
   const btn = document.getElementById('fundBtn');
-  const status = document.getElementById('fundStatus');
   btn.disabled = true;
   btn.textContent = 'Funding...';
-  status.textContent = 'Requesting USDC via Agent Stack CLI...';
+  toast('Requesting USDC via Agent Stack CLI...', 'ok');
   try {
     const res = await fetch('/fund-my-wallet', { method: 'POST' });
     const data = await res.json();
     if (res.ok) {
-      status.textContent = `\u2705 Funded ${data.amount} USDC`;
+      toast(`\u2705 Funded ${data.amount} USDC`, 'ok');
       setTimeout(loadBalances, 2000);
     } else {
-      status.textContent = `\u274c ${data.error}`;
+      toast(`\u274c ${data.error}`, 'err');
     }
   } catch (e) {
-    status.textContent = '\u274c Could not reach the server.';
+    toast('\u274c Could not reach the server.', 'err');
   }
   btn.disabled = false;
   btn.textContent = '+ Fund via Agent Stack';
