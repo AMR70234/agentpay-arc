@@ -137,7 +137,7 @@ async function runEscrowJob(taskInput, amount, priority, clientWallet) {
         job.status = 'released';
         job.finalTx = releaseRes.data;
         recordJob(true, job.worker.walletAddress);
-        recordTransaction(jobId, 'released', amount, taskInput, taskResult, releaseTx.txHash);
+        recordTransaction(jobId, 'released', amount, taskInput, taskResult, releaseTx.txHash, clientWalletAddress);
         console.log(`On-chain auto-release for job ${jobId}: ${releaseRes.data.id}`);
       } catch (err) {
         console.error(`Auto-release failed for job ${jobId}:`, err.message);
@@ -167,7 +167,7 @@ async function runEscrowJob(taskInput, amount, priority, clientWallet) {
     });
     const disputeTx = await pollTransaction(disputeRes.data.id);
     const stats = recordJob(false, worker.walletAddress);
-    recordTransaction(jobId, 'refunded', amount, taskInput, taskResult, disputeTx.txHash);
+    recordTransaction(jobId, 'refunded', amount, taskInput, taskResult, disputeTx.txHash, clientWalletAddress);
 
     return {
       accepted: false,

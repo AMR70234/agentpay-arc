@@ -16,7 +16,7 @@ function saveJobs(jobs) {
   fs.writeFileSync(DB_FILE, JSON.stringify(jobs, null, 2));
 }
 
-function recordTransaction(jobId, status, amount, taskInput, taskResult, txHash) {
+function recordTransaction(jobId, status, amount, taskInput, taskResult, txHash, walletAddress) {
   const jobs = loadJobs();
   const existingIndex = jobs.findIndex(j => j.jobId === jobId);
   const record = {
@@ -26,6 +26,7 @@ function recordTransaction(jobId, status, amount, taskInput, taskResult, txHash)
     taskInput: taskInput || null,
     taskResult: taskResult || null,
     txHash: txHash || null,
+    walletAddress: walletAddress || null,
     createdAt: new Date().toISOString(),
   };
   if (existingIndex >= 0) {
@@ -36,9 +37,10 @@ function recordTransaction(jobId, status, amount, taskInput, taskResult, txHash)
   saveJobs(jobs);
 }
 
-function getRecentTransactions(limit, callback) {
+function getRecentTransactions(limit, callback, walletAddress) {
   const jobs = loadJobs();
-  const sliced = jobs.slice(0, limit || 50);
+  const filtered = walletAddress ? jobs.filter(j => j.walletAddress === walletAddress) : jobs;
+  const sliced = filtered.slice(0, limit || 50);
   callback(null, sliced);
 }
 

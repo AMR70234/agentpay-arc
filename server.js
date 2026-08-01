@@ -163,6 +163,7 @@ app.get('/balances', async (req, res) => {
 });
 
 app.get('/transactions', (req, res) => {
+  const filterWallet = req.user ? req.user.wallet.walletAddress : null;
   getRecentTransactions(50, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     const parsed = rows.map(r => ({
@@ -175,7 +176,7 @@ app.get('/transactions', (req, res) => {
       txHash: r.txHash,
     }));
     res.json(parsed);
-  });
+  }, filterWallet);
 });
 
 app.get('/reputation', (req, res) => {
