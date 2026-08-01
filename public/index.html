@@ -316,7 +316,7 @@
     <div class="log" id="log"><div class="empty">No job run yet. Press "Run agent job" to start.</div></div>
     <div class="dispute-bar" id="disputeBar">
       <span class="dispute-timer" id="disputeTimer">You have 8s to dispute this result</span>
-      <button class="dispute-btn" onclick="disputeCurrentJob()">Dispute this result</button>
+      <button class="dispute-btn" id="disputeActionBtn" onclick="disputeCurrentJob()">Dispute this result</button>
     </div>
   </div>
 
@@ -463,22 +463,34 @@ async function loadBalances(){
     const res = await fetch(`${API_BASE}/balances`);
     const data = await res.json();
     if(!res.ok) throw new Error(data.error||'failed');
+    // Check login status BEFORE animating, so the client card never
+    // flashes the shared demo balance before showing the real one.
+    let loggedInUser = null;
+    try {
+      const userBalRes = await fetch('/user-balance');
+      loggedInUser = await userBalRes.json();
+    } catch(e) {}
+
     ['client','escrow','worker','worker2'].forEach(k=>{
       const el = document.getElementById(k+'Balance');
       el.classList.remove('loading');
       const numEl = el.querySelector('.num');
       const oldVal = parseFloat(numEl.textContent) || 0;
-      const newVal = Number(data[k]);
-      animateCount(numEl, oldVal, newVal);
+      const useUserBalance = k === 'client' && loggedInUser && loggedInUser.loggedIn;
+      const newVal = useUserBalance ? Number(loggedInUser.balance) : Number(data[k]);
+      if (useUserBalance) {
+        numEl.textContent = newVal.toFixed(2);
+        const addrEl = document.getElementById('clientAddr');
+        if (addrEl) addrEl.textContent = loggedInUser.walletAddress;
+      } else {
+        animateCount(numEl, oldVal, newVal);
+      }
       if(oldVal !== newVal){
         el.classList.remove('pulse');
         void el.offsetWidth;
         el.classList.add('pulse');
       }
     });
-
-    // If logged in, override the client card with the user's own wallet.
-    await applyUserOverride();
   }catch(e){
     ['client','escrow','worker','worker2'].forEach(k=>{
       document.getElementById(k+'Balance').querySelector('.num').textContent = '—';
@@ -558,6 +570,8 @@ function startDisputeCountdown(jobId, windowMs) {
 
   bar.classList.add('show');
   timerText.textContent = `You have ${secondsLeft}s to dispute this result`;
+  const disputeActionBtn = document.getElementById('disputeActionBtn');
+  if (disputeActionBtn) disputeActionBtn.disabled = false;
 
   clearInterval(disputeCountdownInterval);
   disputeCountdownInterval = setInterval(() => {
@@ -566,6 +580,8 @@ function startDisputeCountdown(jobId, windowMs) {
       clearInterval(disputeCountdownInterval);
       bar.classList.remove('show');
       currentDisputableJobId = null;
+      const disputeActionBtn = document.getElementById('disputeActionBtn');
+      if (disputeActionBtn) disputeActionBtn.disabled = true;
     } else {
       timerText.textContent = `You have ${secondsLeft}s to dispute this result`;
     }
