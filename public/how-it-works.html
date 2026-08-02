@@ -39,6 +39,12 @@
   .sidebar-link i{font-size:17px;}
   .sidebar-link:hover{background:var(--panel-2);color:var(--text);}
   .sidebar-link.active{background:rgba(55,138,221,0.15);color:var(--blue);}
+  .step-content details{cursor:pointer;}
+  .step-content summary{list-style:none;cursor:pointer;}
+  .step-content summary::-webkit-details-marker{display:none;}
+  .step-content summary h3{display:inline;}
+  .step-content summary::after{content:' +';color:var(--muted);font-size:13px;}
+  .step-content details[open] summary::after{content:' \2212';}
 </style>
 </head>
 <body>
@@ -61,16 +67,16 @@
   <div class="step">
     <div><div class="step-num">1</div><div class="step-line"></div></div>
     <div class="step-content">
-      <h3>Client submits a task</h3>
-      <p>Any text — a passage to summarize, a review to analyze, or a question to answer. The client doesn't specify the type; the worker figures it out.</p>
+      <details><summary><h3>Client submits a task</h3></summary>
+      <p>Any text — a passage to summarize, a review to analyze, or a question to answer. The client doesn't specify the type; the worker figures it out.</p></details>
     </div>
   </div>
 
   <div class="step">
     <div><div class="step-num">2</div><div class="step-line"></div></div>
     <div class="step-content">
-      <h3>Worker classifies and prices the job</h3>
-      <p>An AI call sorts the task into <code>summarize</code>, <code>sentiment</code>, or <code>qa</code>, then prices it based on length:</p>
+      <details><summary><h3>Worker classifies and prices the job</h3></summary>
+      <p>An AI call sorts the task into <code>summarize</code>, <code>sentiment</code>, or <code>qa</code>, then prices it based on length:</p></details>
       <table class="pricing-table">
         <tr><th>Task length</th><th>Fee</th></tr>
         <tr><td>≤ 20 words</td><td>0.5 USDC</td></tr>
@@ -83,39 +89,39 @@
   <div class="step">
     <div><div class="step-num">3</div><div class="step-line"></div></div>
     <div class="step-content">
-      <h3>Client agent picks a worker</h3>
-      <p>With two competing worker agents available, the client scores each one on wallet-tracked reputation and price, and picks the winner — a real decision computed at runtime, not a fixed assignment.</p>
+      <details><summary><h3>Client agent picks a worker</h3></summary>
+      <p>With two competing worker agents available, the client scores each one on wallet-tracked reputation and price, and picks the winner — a real decision computed at runtime, not a fixed assignment.</p></details>
     </div>
   </div>
   <div class="step">
     <div><div class="step-num">4</div><div class="step-line"></div></div>
     <div class="step-content">
-      <h3>Funds are escrowed on-chain</h3>
-      <p>The fee moves into the <code>AgentPayEscrow.sol</code> smart contract on Arc Testnet, signed via Circle's wallet APIs — not held by this server's own logic.</p>
+      <details><summary><h3>Funds are escrowed on-chain</h3></summary>
+      <p>The fee moves into the <code>AgentPayEscrow.sol</code> smart contract on Arc Testnet, signed via Circle's wallet APIs — not held by this server's own logic.</p></details>
     </div>
   </div>
 
   <div class="step">
     <div><div class="step-num">5</div><div class="step-line"></div></div>
     <div class="step-content">
-      <h3>Worker executes, a separate model verifies</h3>
-      <p>One model produces the result. A different, independent model checks it — rejecting non-answers and unqualified time-sensitive claims. No model grades its own work.</p>
+      <details><summary><h3>Worker executes, a separate model verifies</h3></summary>
+      <p>One model produces the result. A different, independent model checks it — rejecting non-answers and unqualified time-sensitive claims. No model grades its own work.</p></details>
     </div>
   </div>
 
   <div class="step">
     <div><div class="step-num">6</div><div class="step-line"></div></div>
     <div class="step-content">
-      <h3>A dispute window opens</h3>
-      <p>Accepted results aren't paid out instantly. The client has an 8-second window to dispute before the automatic release fires.</p>
+      <details><summary><h3>A dispute window opens</h3></summary>
+      <p>Accepted results aren't paid out instantly. The client has an 8-second window to dispute before the automatic release fires.</p></details>
     </div>
   </div>
 
   <div class="step">
     <div><div class="step-num">7</div></div>
     <div class="step-content">
-      <h3>Settlement</h3>
-      <p>No dispute: the contract releases funds to the worker automatically. Disputed: the client is refunded on-chain immediately. Rejected results refund the client right away too.</p>
+      <details><summary><h3>Settlement</h3></summary>
+      <p>No dispute: the contract releases funds to the worker automatically. Disputed: the client is refunded on-chain immediately. Rejected results refund the client right away too.</p></details>
     </div>
   </div>
 
@@ -123,8 +129,7 @@
     <div class="eyebrow" style="margin-bottom:8px;">BEYOND ESCROW</div>
     <h3 style="margin:0 0 8px;">Nanopayments via Circle Gateway</h3>
     <p style="font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.6;">A separate, live endpoint accepts sub-cent, gas-free payments through Circle's x402-batching middleware — funded by a real deposit to the official GatewayWallet contract on Arc Testnet.</p>
-    <button onclick="testNanopayment()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;">Test it live</button>
-    <pre id="nanopayResult" style="margin-top:12px;font-size:11px;color:var(--muted);background:var(--panel-2);padding:10px;border-radius:8px;white-space:pre-wrap;display:none;"></pre>
+    <a href="/" style="color:var(--blue);font-size:12.5px;text-decoration:none;">Try it live on the homepage &rarr;</a>
   </div>
 
 </div>
