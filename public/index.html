@@ -209,13 +209,57 @@
     <h1>Two agents. One <span>ledger</span>.<br/>Settlement without a human in the loop.</h1>
     <p class="sub">A client agent escrows a fee. A worker agent classifies the task, executes it, and gets paid — or refunded — the instant the result is verified on Arc.</p>
   </header>
+  <div class="panel">
+    <div class="panel-row">
+      <label class="panel-label" for="taskInput">Task — the agent classifies this automatically</label>
+      <span class="counter" id="wordCount">0 words</span>
+    </div>
+    <textarea id="taskInput" oninput="updateCounter()" placeholder="Type anything: a passage to summarize, a review to analyze, or a question to answer. The agent figures out which.">Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.</textarea>
 
-  <div class="how-it-works">
-    <div class="how-card"><div class="how-num">1</div><div class="how-title">Submit</div><div class="how-desc">Client agent posts any task — no type specified upfront.</div></div>
-    <div class="how-card"><div class="how-num">2</div><div class="how-title">Classify & Price</div><div class="how-desc">Worker detects the task type and sets a dynamic fee based on length.</div></div>
-    <div class="how-card"><div class="how-num">3</div><div class="how-title">Escrow & Execute</div><div class="how-desc">Fee is held in trust while the worker completes the task with an LLM.</div></div>
-    <div class="how-card"><div class="how-num">4</div><div class="how-title">Verify & Settle</div><div class="how-desc">Result is checked against a rule — funds release or refund instantly.</div></div>
+    <div class="row-config">
+      <span class="price-tag" id="pricePreview">Estimated fee: 1 USDC</span>
+      <div class="presets">
+        <button class="preset-btn" onclick="loadPreset('arc')">Arc description</button>
+        <button class="preset-btn" onclick="loadPreset('review')">Product review</button>
+        <button class="preset-btn" onclick="loadPreset('question')">Direct question</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;">
+        <input type="checkbox" id="priorityCheck" style="cursor:pointer;" />
+        Pay $0.001 for priority (1s dispute window instead of 8s, via a real Nanopayment)
+      </label>
+      <button class="primary" id="runBtn" onclick="runJob()">
+        <span class="spinner"></span><span id="runBtnLabel">Run agent job</span>
+      </button>
+    </div>
   </div>
+
+  <div class="ledger">
+    <div class="ledger-head">
+      <span class="panel-label">Settlement log</span>
+      <div class="badges">
+        <span class="type-chip" id="typeChip" style="display:none;"></span>
+        <span class="status-chip" id="statusChip">idle</span>
+      </div>
+    </div>
+    <div class="log" id="log"><div class="empty">No job run yet. Press "Run agent job" to start.</div></div>
+    <div class="dispute-bar" id="disputeBar">
+      <span class="dispute-timer" id="disputeTimer">You have 8s to dispute this result</span>
+      <button class="dispute-btn" id="disputeActionBtn" onclick="disputeCurrentJob()">Dispute this result</button>
+    </div>
+  </div>
+
+  <div class="history">
+    <div class="history-head">
+      <span class="panel-label">Transaction history</span>
+      <span class="counter" id="historyCount">0 runs this session</span>
+    </div>
+    <div id="historyBody"><div class="history-empty">Runs you complete will appear here.</div></div>
+  </div>
+
+
 
   <div class="stats-row">
     <div class="stat-card">
@@ -279,56 +323,6 @@
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-row">
-      <label class="panel-label" for="taskInput">Task — the agent classifies this automatically</label>
-      <span class="counter" id="wordCount">0 words</span>
-    </div>
-    <textarea id="taskInput" oninput="updateCounter()" placeholder="Type anything: a passage to summarize, a review to analyze, or a question to answer. The agent figures out which.">Arc is a Layer-1 blockchain built by Circle specifically for stablecoin finance. It uses USDC as the native gas token, offers sub-second transaction finality, and provides a full developer platform for building payment applications, DeFi products, and autonomous AI agents that can transact value in real time without human intervention.</textarea>
-
-    <div class="row-config">
-      <span class="price-tag" id="pricePreview">Estimated fee: 1 USDC</span>
-      <div class="presets">
-        <button class="preset-btn" onclick="loadPreset('arc')">Arc description</button>
-        <button class="preset-btn" onclick="loadPreset('review')">Product review</button>
-        <button class="preset-btn" onclick="loadPreset('question')">Direct question</button>
-      </div>
-    </div>
-
-    <div class="actions">
-      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;">
-        <input type="checkbox" id="priorityCheck" style="cursor:pointer;" />
-        Pay $0.001 for priority (1s dispute window instead of 8s, via a real Nanopayment)
-      </label>
-      <button class="primary" id="runBtn" onclick="runJob()">
-        <span class="spinner"></span><span id="runBtnLabel">Run agent job</span>
-      </button>
-    </div>
-  </div>
-
-  <div class="ledger">
-    <div class="ledger-head">
-      <span class="panel-label">Settlement log</span>
-      <div class="badges">
-        <span class="type-chip" id="typeChip" style="display:none;"></span>
-        <span class="status-chip" id="statusChip">idle</span>
-      </div>
-    </div>
-    <div class="log" id="log"><div class="empty">No job run yet. Press "Run agent job" to start.</div></div>
-    <div class="dispute-bar" id="disputeBar">
-      <span class="dispute-timer" id="disputeTimer">You have 8s to dispute this result</span>
-      <button class="dispute-btn" id="disputeActionBtn" onclick="disputeCurrentJob()">Dispute this result</button>
-    </div>
-  </div>
-
-  <div class="history">
-    <div class="history-head">
-      <span class="panel-label">Transaction history</span>
-      <span class="counter" id="historyCount">0 runs this session</span>
-    </div>
-    <div id="historyBody"><div class="history-empty">Runs you complete will appear here.</div></div>
-  </div>
-
   <div class="why-heading">
     <div class="why-eyebrow">Why Arc + USDC</div>
     <div class="why-h2">Built for autonomous settlement</div>
@@ -378,6 +372,12 @@
       <button onclick="sendAgentStackPayment()" id="agentStackPayBtn" style="background:transparent;border:1px solid var(--blue);color:var(--blue);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;">Send USDC payment</button>
       <div id="agentStackOut" style="margin-top:12px;font-size:12px;color:var(--muted);display:none;font-family:monospace;"></div>
     </div>
+  </div>
+  <div class="how-it-works">
+    <div class="how-card"><div class="how-num">1</div><div class="how-title">Submit</div><div class="how-desc">Client agent posts any task — no type specified upfront.</div></div>
+    <div class="how-card"><div class="how-num">2</div><div class="how-title">Classify & Price</div><div class="how-desc">Worker detects the task type and sets a dynamic fee based on length.</div></div>
+    <div class="how-card"><div class="how-num">3</div><div class="how-title">Escrow & Execute</div><div class="how-desc">Fee is held in trust while the worker completes the task with an LLM.</div></div>
+    <div class="how-card"><div class="how-num">4</div><div class="how-title">Verify & Settle</div><div class="how-desc">Result is checked against a rule — funds release or refund instantly.</div></div>
   </div>
   <footer>
     Backend: Circle Developer-Controlled Wallets · Network: Arc Testnet · Model: gpt-4o-mini ·
