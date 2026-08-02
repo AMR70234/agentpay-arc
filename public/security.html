@@ -102,6 +102,20 @@
         <p>Every settled transaction surfaces a direct link to view it on the Arc block explorer — anyone can verify it happened, on-chain, in real time.</p>
       </div>
     </div>
+    <div class="layer-card">
+      <i class="ti ti-user-shield"></i>
+      <div>
+        <h3>Per-account data isolation</h3>
+        <p>Signed-in users (via Google) get their own Circle wallet, permanently linked to their account. Transaction history and reputation stats are filtered to that wallet only — not the shared demo history every anonymous visitor sees.</p>
+      </div>
+    </div>
+    <div class="layer-card">
+      <i class="ti ti-clock-dollar"></i>
+      <div>
+        <h3>Per-account daily funding limit</h3>
+        <p>Wallet funding via the Agent Stack CLI is capped at $10/day per Google account, tracked server-side — preventing a single account from draining the shared Agent Stack wallet through repeated requests.</p>
+      </div>
+    </div>
   </div>
 
   <div class="section">
@@ -113,7 +127,7 @@
       </div>
       <div class="limitation-item">
         <i class="ti ti-alert-triangle"></i>
-        <p><b>Agent Stack wallet has no per-transfer cap.</b> The one-time rescue transfer and the "Fund via Agent Stack" button both move fixed amounts, but the underlying wallet itself has no hard on-chain spend limit beyond the $10/day per-account tracking done in the app layer.</p>
+        <p><b>Agent Stack wallet has no per-transfer cap.</b> Fixed-amount transfers only, capped at $10/day per account — but no hard per-transaction limit on the wallet itself yet.</p>
       </div>
       <div class="limitation-item">
         <i class="ti ti-alert-triangle"></i>
