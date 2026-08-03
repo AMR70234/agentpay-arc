@@ -135,8 +135,6 @@ OPENAI_API_KEY=
 
 - Move escrow logic from an off-chain orchestration script into an actual on-chain smart contract, closer to the ERC-8183 job/escrow standard (post → escrow → deliver → evaluate → settle entirely on-chain).
 - Add on-chain agent identity (ERC-8004), so a worker agent's reputation is portable and verifiable across applications, not stored in a local file.
-- Support multiple worker agents competing for the same job, with the client agent choosing based on price and reputation.
-- Explore deeper integration with Agent Stack starter kits for wallet/payment orchestration.
 - Persist reputation data in a hosted store so it survives redeploys, instead of local JSON.
 
 ## Live demo

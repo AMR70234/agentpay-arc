@@ -1,5 +1,19 @@
 [
   {
+    "jobId": "0x8d4bee1c0d84d9a642c1b228ddece297b2af9a48e6d8f4518a17d4d5785f7ebb",
+    "status": "released",
+    "amount": "0.45",
+    "taskInput": "What do you know about the CIRCLE project?",
+    "taskResult": {
+      "accepted": true,
+      "result": "Circle Internet Group is the company behind USDC, a stablecoin fully backed by cash and short-term US Treasuries. It also operates various financial services, including Circle Mint, Circle Payments Network, and the Cross-Chain Transfer Protocol (CCTP), and is developing its own Layer-1 blockchain called Arc.",
+      "taskType": "qa"
+    },
+    "txHash": "0x02576db5318a7e68564fa049c91ee4cf3006a01c8d9cab4a28435936edbc4ccf",
+    "walletAddress": "0x5d3db72297e487d3268c9b36b0af6cea52676d41",
+    "createdAt": "2026-08-02T07:53:55.844Z"
+  },
+  {
     "jobId": "0xc747223dedfd9bf0f64951bd6b8be71a4a94f2a2e18ca1016c989c39daa1fffb",
     "status": "refunded",
     "amount": "0.45",
